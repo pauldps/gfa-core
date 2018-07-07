@@ -49,7 +49,8 @@ class SessionAdapter {
 
   // This method should generate a token or cookie based on the user record
   //   and set it in the response object.
-  create (_userRecord, req, res, callback) {
+  // It also should load the session data into the request.
+  create (req, res, _userRecord, callback) {
     callback(NOT_IMPLEMENTED, req, res)
   }
 

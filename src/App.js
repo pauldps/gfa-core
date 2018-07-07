@@ -7,20 +7,20 @@ const INTERNAL_ERROR_RESPONSE = {code: 'INTERNAL_ERROR'}
 class App {
   constructor (options) {
     if (!options) {
-      throw new Error('AUTHORIZER_OPTIONS_REQUIRED')
+      throw new Error('APP_OPTIONS_REQUIRED')
     }
     if (!options.session) {
-      throw new Error('AUTHORIZER_SESSION_ADAPTER_REQUIRED')
+      throw new Error('APP_SESSION_ADAPTER_REQUIRED')
     }
     if (!options.router) {
-      throw new Error('AUTHORIZER_ROUTER_ADAPTER_REQUIRED')
+      throw new Error('APP_ROUTER_ADAPTER_REQUIRED')
     }
     this.session = options.session
     this.database = options.database
     this.password = options.password
     this.router = options.router
     this.headers = []
-    this.table = options.table || 'User'
+    this.table = options.table || 'users'
     this.setFieldNames(options.fields)
     this.proxify()
     this.router.build(this.proxy)
@@ -44,9 +44,9 @@ class App {
     this
       .database
       .query(
+        req, res,
         this.table, conditions,
-        this.proxy.signInQueryResult,
-        req, res
+        this.proxy.signInQueryResult
       )
   }
 
@@ -63,9 +63,9 @@ class App {
     this
       .password
       .validate(
+        req, res,
         user[passwordField], req.body[passwordField],
-        this.proxy.signInPasswordResult,
-        req, res
+        this.proxy.signInPasswordResult
       )
   }
 
@@ -79,9 +79,9 @@ class App {
     this
       .session
       .create(
+        req, res,
         res.locals.signInUser,
-        this.proxy.signInSessionResult,
-        req, res
+        this.proxy.signInSessionResult
       )
   }
 
@@ -89,7 +89,7 @@ class App {
     if (err) {
       return this.error(err, req, res, 'signInSessionResult')
     }
-    res.status(201).json(this.session.data(res))
+    res.status(201).json(this.session.data(req, res))
   }
 
   // DELETE /session
@@ -108,7 +108,7 @@ class App {
     if (err) {
       return this.error(err, req, res, 'signOutSessionDestroy')
     }
-    this.empty(req, res)
+    this.empty(null, req, res)
   }
 
   // GET /session
@@ -140,18 +140,23 @@ class App {
     res.status(204).end()
   }
 
+  // Used only for uncaught errors.
+  // Error details should be logged, but not exposed.
   error (err, req, res, source) {
+    if (err.message === 'UNAUTHORIZED') {
+      return res.status(401).end()
+    }
     console.error(source, err)
     res.status(500).json(INTERNAL_ERROR_RESPONSE)
   }
 
-  final (req, res) {
+  final (_req, res) {
     if (!res.headerSent) {
       res.status(404).end()
     }
   }
 
-  setHeaders (req, res) {
+  setHeaders (_req, res) {
     var header
     for (header of this.headers) {
       res.header(header[0], header[1])
@@ -166,7 +171,7 @@ class App {
   }
 
   // Create a "proxy" object with function copies bound to this instance.
-  // Used by routing and callbacks for improved performance.
+  // This avoids allocating new functions during callback chains.
   proxify () {
     this.proxy = {
       setHeaders: this.setHeaders.bind(this),

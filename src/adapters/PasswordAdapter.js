@@ -1,8 +1,8 @@
 'use strict'
 
 class PasswordAdapter {
-  validate (_hash, _plain, callback, req, res) {
-    callback(new Error('PASSWORD_ADAPTER_NOT_IMPLEMENTED'), false, req, res)
+  validate (req, res, _hash, _plain, callback) {
+    callback(new Error('PASSWORD_ADAPTER_NOT_IMPLEMENTED'), req, res, false)
   }
 }
 
