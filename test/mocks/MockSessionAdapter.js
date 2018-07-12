@@ -1,6 +1,6 @@
 'use strict'
 
-const {SessionAdapter} = require('../../src/adapters/SessionAdapter')
+const {SessionAdapter} = require('../../adapters/SessionAdapter')
 
 // This mock can load two different sessions based on the
 //   value of the Authorization header.

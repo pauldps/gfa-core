@@ -1,14 +1,51 @@
-# @gf-apis/sessions-core
+# @gf-apis/core
 
-This is the base project for [@gf-apis/sessions-api](https://github.com/gf-apis/sessions-api) without the external dependencies.
+This is the base project for the family of [@gf-apis](https://github.com/gf-apis) components.
 
-Use this library if you do __not__ want to use either Google Datastore, Bcrypt, or Client Sessions.
+It provides a number of base classes for other packages to extend from.
+
+## Apps
+
+An "app" is the effective entry point of a Google Function.
+
+An app is expected to have a `handle()` method that accepts `req` and `res` as arguments. Those are then passed onto the app's internal router.
+
+All apps also have a `headers` property which is an array of headers that are sent in all responses (for things like CORS, security headers, and so on).
+
+### `SessionsApp`
+
+This is the base app for the authentication api (sign-in, sign-out, session information).
+
+It serves the following endpoints (based on a Google Function named "session"):
+
+* `POST /session`
+* `GET /session`
+* `DELETE /session`
+
+### `UsersApp`
+
+(Not yet implemented) This is an opinionated user management app with a simplistic role management.
+
+It's an extension of `ResourceApp` with additional, user-management specific features.
+
+### `ResourceApp`
+
+(Not yet implemented) This app serves a RESTful-ish API for a single resource.
+
+Example of endpoints served for a Google Function named "tasks":
+
+* `POST /tasks` - create a new task
+* `GET /tasks` - list tasks
+* `GET /tasks/:id` - show info about an specific task
+* `PUT /tasks/:id` - update a task (destructively)
+* `PATCH /tasks/:id` - update a task (partially)
+* `DELETE /tasks/:id` - delete a task
 
 ## Adapters
 
-Each major functionality of this library (session control, password verification, database manipulation, and routing) relies on an adapter.
+Each major functionality of an app (namely: session management, database storage, and password verification) relies on an adapter.
 
-Since this library has no dependencies, you need to require and configure the adapters manually:
+The following is the rough implementation of the [__sessions-app__](https://github.com/gf-apis/session-app) project with opinionated adapters (ClientSessions, Google Datastore and Bcrypt):
 
 ```javascript
 const ClientSessionsAdapter = require('@gf-apis/client-sessions-adapter')
@@ -27,49 +64,59 @@ const passwordAdapter = new BcryptAdapter({
   // ... password settings go here
 })
 
-const ExpressRouterAdapter = require('@gf-apis/express-router-adapter')
-const routerAdapter = new ExpressRouterAdapter({
+const ExpressSessionsRouter = require('@gf-apis/express-sessions-router')
+const router = new ExpressSessionRouter({
   // ... router settings go here
 })
 
-const Authorizer = require('@gf-apis/sessions-core')
-const authorizer = new Authorizer({
+const {SessionsApp} = require('@gf-apis/core/apps/SessionsApp')
+const app = new SessionsApp({
   session: sessionAdapter,
   database: databaseAdapter,
   password: passwordAdapter,
-  router: routerAdapter
+  router: router
 })
 
 exports.handleRequest = function (req, res) {
-  authorizer.handle(req, res)
+  app.handle(req, res)
 }
 ```
 
-You can also create your own adapters. This library provides base classes for your new adapters to extend from:
-
-### SessionAdapter
+### `SessionAdapter`
 
 This adapter handles client sessions and validates session credentials.
 
 If you prefer JWT tokens instead of cookies, you can create a new adapter here.
 
-### DatabaseAdapter
+### `DatabaseAdapter`
 
 This adapter handles database operations, such as queries, insertions, updates, etc.
 
 If you prefer MySQL or Postgres as opposed to Datastore, you can create a new adapter here.
 
-### PasswordAdapter
+### `PasswordAdapter`
 
 This adapter hashes and verifies passwords.
 
 If you prefer something other than Bcrypt, you can create a new adapter here.
 
-### RouterAdapter
+## Routers
 
-This adapter captures the request and redirects it to the proper function to be handled.
+Each app has an specific router. The base routers provided by this package are not production-oriented, and it's highly recommended to use a real router (like express-session-router, for example).
 
-If you would rather use another router, or need to use additional middleware, you can create a new adapter here.
+Routers can be extended if additional middleware is required.
+
+### `SessionsRouter`
+
+This router handles the endpoints for a Session app.
+
+### `UsersRouter`
+
+This router handles the endpoints for an Users app.
+
+### `ResourceRouter`
+
+This router handles the endpoints for a resource app.
 
 ## License
 

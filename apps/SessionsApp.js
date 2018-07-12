@@ -4,7 +4,7 @@ const CONFIGURATION_ERROR = new Error('CONFIGURATION_ERROR')
 const INTERNAL_ERROR_RESPONSE = {code: 'INTERNAL_ERROR'}
 
 // This mini app serves the API endpoints for session management.
-class App {
+class SessionsApp {
   constructor (options) {
     if (!options) {
       throw new Error('APP_OPTIONS_REQUIRED')
@@ -193,4 +193,4 @@ class App {
   }
 }
 
-exports.App = App
+exports.SessionsApp = SessionsApp

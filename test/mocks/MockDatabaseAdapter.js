@@ -1,6 +1,6 @@
 'use strict'
 
-const {DatabaseAdapter} = require('../../src/adapters/DatabaseAdapter')
+const {DatabaseAdapter} = require('../../adapters/DatabaseAdapter')
 
 class MockDatabaseAdapter extends DatabaseAdapter {
   query (req, res, table, conditions, callback) {

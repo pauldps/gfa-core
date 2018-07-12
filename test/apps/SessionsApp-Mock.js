@@ -3,22 +3,22 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const {App} = require('../src/App')
-const {MockSessionAdapter} = require('./mocks/MockSessionAdapter')
-const {MockDatabaseAdapter} = require('./mocks/MockDatabaseAdapter')
-const {MockPasswordAdapter} = require('./mocks/MockPasswordAdapter')
-const {RouterAdapter} = require('../src/adapters/RouterAdapter')
-const {emulator, setApp} = require('./support/emulator')
+const {SessionsApp} = require('../../apps/SessionsApp')
+const {MockSessionAdapter} = require('../mocks/MockSessionAdapter')
+const {MockDatabaseAdapter} = require('../mocks/MockDatabaseAdapter')
+const {MockPasswordAdapter} = require('../mocks/MockPasswordAdapter')
+const {SessionsRouter} = require('../../routers/SessionsRouter')
+const {emulator, setApp} = require('../support/emulator')
 
-describe('App(SessionMock, DatabaseMock, PasswordMock, RouterBase)', function () {
+describe('SessionsApp(SessionMock, DatabaseMock, PasswordMock, RouterBase)', function () {
   let app
 
   before(function () {
-    app = new App({
+    app = new SessionsApp({
       session: new MockSessionAdapter({secret: 'mock'}),
       database: new MockDatabaseAdapter(),
       password: new MockPasswordAdapter(),
-      router: new RouterAdapter()
+      router: new SessionsRouter()
     })
     app.headers.push(['x-custom-header', 'mockheader'])
     setApp(app)

@@ -3,15 +3,15 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const {App} = require('../src/App')
-const {SessionAdapter} = require('../src/adapters/SessionAdapter')
-const {DatabaseAdapter} = require('../src/adapters/DatabaseAdapter')
-const {PasswordAdapter} = require('../src/adapters/PasswordAdapter')
-const {RouterAdapter} = require('../src/adapters/RouterAdapter')
-const {emulator, setApp} = require('./support/emulator')
-const ConsoleErrorInterceptor = require('./support/console-error')
+const {SessionsApp} = require('../../apps/SessionsApp')
+const {SessionsRouter} = require('../../routers/SessionsRouter')
+const {SessionAdapter} = require('../../adapters/SessionAdapter')
+const {DatabaseAdapter} = require('../../adapters/DatabaseAdapter')
+const {PasswordAdapter} = require('../../adapters/PasswordAdapter')
+const {emulator, setApp} = require('../support/emulator')
+const ConsoleErrorInterceptor = require('../support/console-error')
 
-describe('App(SessionBase, DatabaseBase, PasswordBase, RouterBase)', function () {
+describe('SessionsApp(SessionBase, DatabaseBase, PasswordBase, RouterBase)', function () {
   before(ConsoleErrorInterceptor.activate)
   after(ConsoleErrorInterceptor.deactivate)
 
@@ -19,11 +19,11 @@ describe('App(SessionBase, DatabaseBase, PasswordBase, RouterBase)', function ()
 
   before(function () {
     ConsoleErrorInterceptor.reset()
-    app = new App({
+    app = new SessionsApp({
       session: new SessionAdapter({secret: 'abc'}),
       database: new DatabaseAdapter(),
       password: new PasswordAdapter(),
-      router: new RouterAdapter()
+      router: new SessionsRouter()
     })
     app.headers.push(['x-custom-header', 'bbb'])
     setApp(app)

@@ -1,3 +1,1 @@
-const {App} = require('./src/App')
-
-module.exports = App
+// Nothing goes here

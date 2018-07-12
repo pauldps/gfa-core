@@ -1,7 +1,7 @@
 'use strict'
 
-class RouterAdapter {
-  constructor (authorizer) {
+class SessionsRouter {
+  constructor () {
     this.methods = new Map()
     this.final = notFound
   }
@@ -29,4 +29,4 @@ function notFound (_req, res) {
   res.status(404).end()
 }
 
-exports.RouterAdapter = RouterAdapter
+exports.SessionsRouter = SessionsRouter
