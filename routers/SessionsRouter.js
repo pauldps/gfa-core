@@ -1,12 +1,16 @@
 'use strict'
 
-class SessionsRouter {
-  constructor () {
+const {BaseRouter} = require('./BaseRouter')
+
+class SessionsRouter extends BaseRouter {
+  constructor (options) {
+    super(options)
     this.methods = new Map()
     this.final = notFound
   }
 
   handle (req, res) {
+    this.normalize(req, res)
     var fn = this.methods.get(req.method)
     if (!fn) {
       return this.final(req, res)

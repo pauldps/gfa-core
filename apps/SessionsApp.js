@@ -1,44 +1,30 @@
 'use strict'
 
-const CONFIGURATION_ERROR = new Error('CONFIGURATION_ERROR')
-const INTERNAL_ERROR_RESPONSE = {code: 'INTERNAL_ERROR'}
+const {BaseApp} = require('./BaseApp')
 
 // This mini app serves the API endpoints for session management.
-class SessionsApp {
+class SessionsApp extends BaseApp {
   constructor (options) {
-    if (!options) {
-      throw new Error('APP_OPTIONS_REQUIRED')
-    }
+    super(options)
     if (!options.session) {
       throw new Error('APP_SESSION_ADAPTER_REQUIRED')
     }
-    if (!options.router) {
-      throw new Error('APP_ROUTER_ADAPTER_REQUIRED')
+    if (!options.database) {
+      throw new Error('APP_DATABASE_ADAPTER_REQUIRED')
+    }
+    if (!options.password) {
+      throw new Error('APP_PASSWORD_ADAPTER_REQUIRED')
     }
     this.session = options.session
     this.database = options.database
     this.password = options.password
-    this.router = options.router
-    this.headers = []
     this.table = options.table || 'users'
     this.setFieldNames(options.fields)
-    this.proxify()
-    this.router.build(this.proxy)
-  }
-
-  handle (req, res) {
-    if (!this.router) {
-      return this.error(CONFIGURATION_ERROR, req, res, 'handle')
-    }
-    this.setHeaders(req, res)
-    this.router.handle(req, res)
+    this.build()
   }
 
   // POST /session
   signIn (req, res) {
-    if (!this.database || !this.password) {
-      return this.error(CONFIGURATION_ERROR, req, res)
-    }
     var primaryField = this.fields.primary
     var conditions = [[primaryField, '=', req.body[primaryField]]]
     this
@@ -128,41 +114,6 @@ class SessionsApp {
     this.session.authorize(req, res, this.proxy.empty)
   }
 
-  // OPTIONS /session
-  options (req, res) {
-    this.empty(null, req, res)
-  }
-
-  empty (err, req, res) {
-    if (err) {
-      return this.error(err, req, res, 'empty')
-    }
-    res.status(204).end()
-  }
-
-  // Used only for uncaught errors.
-  // Error details should be logged, but not exposed.
-  error (err, req, res, source) {
-    if (err.message === 'UNAUTHORIZED') {
-      return res.status(401).end()
-    }
-    console.error(source, err)
-    res.status(500).json(INTERNAL_ERROR_RESPONSE)
-  }
-
-  final (_req, res) {
-    if (!res.headerSent) {
-      res.status(404).end()
-    }
-  }
-
-  setHeaders (_req, res) {
-    var header
-    for (header of this.headers) {
-      res.header(header[0], header[1])
-    }
-  }
-
   setFieldNames (opts) {
     this.fields = {}
     var options = opts || {}
@@ -170,26 +121,18 @@ class SessionsApp {
     this.fields.password = options.password || 'password'
   }
 
-  // Create a "proxy" object with function copies bound to this instance.
-  // This avoids allocating new functions during callback chains.
   proxify () {
-    this.proxy = {
-      setHeaders: this.setHeaders.bind(this),
-      signIn: this.signIn.bind(this),
-      signInQueryResult: this.signInQueryResult.bind(this),
-      signInPasswordResult: this.signInPasswordResult.bind(this),
-      signInSessionResult: this.signInSessionResult.bind(this),
-      signOut: this.signOut.bind(this),
-      signOutAuthorized: this.signOutAuthorized.bind(this),
-      signOutSessionDestroy: this.signOutSessionDestroy.bind(this),
-      info: this.info.bind(this),
-      infoAuthorized: this.infoAuthorized.bind(this),
-      head: this.head.bind(this),
-      options: this.options.bind(this),
-      empty: this.empty.bind(this),
-      error: this.error.bind(this),
-      final: this.final.bind(this)
-    }
+    super.proxify()
+    this.proxy.signIn = this.signIn.bind(this)
+    this.proxy.signInQueryResult = this.signInQueryResult.bind(this)
+    this.proxy.signInPasswordResult = this.signInPasswordResult.bind(this)
+    this.proxy.signInSessionResult = this.signInSessionResult.bind(this)
+    this.proxy.signOut = this.signOut.bind(this)
+    this.proxy.signOutAuthorized = this.signOutAuthorized.bind(this)
+    this.proxy.signOutSessionDestroy = this.signOutSessionDestroy.bind(this)
+    this.proxy.info = this.info.bind(this)
+    this.proxy.infoAuthorized = this.infoAuthorized.bind(this)
+    this.proxy.head = this.head.bind(this)
   }
 }
 
