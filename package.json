@@ -1,7 +1,7 @@
 {
-  "name": "@gf-apis/sessions-core",
+  "name": "@gf-apis/core",
   "version": "0.2.0",
-  "description": "Base project for @gf-apis/sessions-api without external dependencies",
+  "description": "Base project for @gf-apis components",
   "main": "index.js",
   "scripts": {
     "test": "standard --fix && nyc mocha",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gf-apis/sessions-core.git"
+    "url": "git+https://github.com/gf-apis/core.git"
   },
   "author": "Panayotis Procopiou <gfapis@pauloddr.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/gf-apis/sessions-core/issues"
+    "url": "https://github.com/gf-apis/core/issues"
   },
-  "homepage": "https://github.com/gf-apis/sessions-core#readme",
+  "homepage": "https://github.com/gf-apis/core#readme",
   "dependencies": {},
   "devDependencies": {
     "body-parser": "1.17.1",
