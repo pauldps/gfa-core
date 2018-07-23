@@ -70,6 +70,34 @@ describe('SessionsApp(SessionMock, DatabaseMock, PasswordMock, RouterBase)', fun
           })
       })
     })
+
+    context('with blank username', function () {
+      it('fails with status 400', function () {
+        let data = {password: '123'}
+        return chai
+          .request(emulator)
+          .post('/')
+          .send(data)
+          .then(response => {
+            expect(response).to.have.status(400)
+            expect(response).to.not.have.header('x-token')
+          })
+      })
+    })
+
+    context('with blank password', function () {
+      it('fails with status 400', function () {
+        let data = {ussername: 'abc'}
+        return chai
+          .request(emulator)
+          .post('/')
+          .send(data)
+          .then(response => {
+            expect(response).to.have.status(400)
+            expect(response).to.not.have.header('x-token')
+          })
+      })
+    })
   })
 
   describe('GET', function () {

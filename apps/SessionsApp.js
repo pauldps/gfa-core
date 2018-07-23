@@ -2,6 +2,9 @@
 
 const {BaseApp} = require('./BaseApp')
 
+const PRIMARY_VALUE_REQUIRED = {code: 'PRIMARY_VALUE_REQUIRED'}
+const PASSWORD_VALUE_REQUIRED = {code: 'PASSWORD_VALUE_REQUIRED'}
+
 // This mini app serves the API endpoints for session management.
 class SessionsApp extends BaseApp {
   constructor (options) {
@@ -26,7 +29,16 @@ class SessionsApp extends BaseApp {
   // POST /session
   signIn (req, res) {
     var primaryField = this.fields.primary
-    var conditions = [[primaryField, '=', req.body[primaryField]]]
+    var passwordField = this.fields.password
+    var primaryValue = req.body[primaryField]
+    var passwordValue = req.body[passwordField]
+    if (!primaryValue) {
+      return res.status(400).json(PRIMARY_VALUE_REQUIRED)
+    }
+    if (!passwordValue) {
+      return res.status(400).json(PASSWORD_VALUE_REQUIRED)
+    }
+    var conditions = [[primaryField, '=', primaryValue]]
     this
       .database
       .query(
