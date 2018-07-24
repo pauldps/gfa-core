@@ -11,7 +11,7 @@ class BaseApp {
       throw new Error('APP_ROUTER_REQUIRED')
     }
     this.router = options.router
-    this.headers = []
+    this.headers = options.headers || []
     this.proxify()
   }
 
