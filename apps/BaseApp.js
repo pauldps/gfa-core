@@ -1,5 +1,7 @@
 'use strict'
 
+const {Payload} = require('../lib/Payload')
+
 const INTERNAL_ERROR_RESPONSE = {code: 'INTERNAL_ERROR'}
 
 class BaseApp {
@@ -11,64 +13,54 @@ class BaseApp {
       throw new Error('APP_ROUTER_REQUIRED')
     }
     this.router = options.router
+    this.router.app = this
     this.headers = options.headers || []
-    this.proxify()
-  }
-
-  build () {
-    this.router.build(this.proxy)
+    this.firebasePath = options.firebasePath
   }
 
   handle (req, res) {
-    this.setHeaders(req, res)
-    this.router.handle(req, res)
+    var payload = new Payload(req, res, this)
+    return payload.process().catch(err => {
+      err.payload = payload
+      this.error(err)
+    })
   }
 
   // OPTIONS /endpoint
-  options (req, res) {
-    this.empty(null, req, res)
+  options (payload) {
+    payload.app.empty(payload)
   }
 
-  empty (err, req, res) {
-    if (err) {
-      return this.error(err, req, res, 'empty')
-    }
-    res.status(204).end()
+  empty (payload) {
+    payload.res.status(204).end()
   }
 
-  // Used only for uncaught errors.
-  // Error details should be logged, but not exposed.
-  error (err, req, res, source) {
+  error (err /* err with payload */) {
+    var res = err.payload.res
     if (err.message === 'UNAUTHORIZED') {
       return res.status(401).end()
     }
-    console.error(source, err)
+    // Uncaught errors should be logged, but not exposed.
+    console.error(err.source, err)
     res.status(500).json(INTERNAL_ERROR_RESPONSE)
   }
 
-  final (_req, res) {
-    if (!res.headerSent) {
-      res.status(404).end()
-    }
-  }
-
-  setHeaders (_req, res) {
+  setHeaders (payload) {
     var header
-    for (header of this.headers) {
+    var headers = payload.app.headers
+    var res = payload.res
+    for (header of headers) {
       res.header(header[0], header[1])
     }
   }
 
-  // Create a "proxy" object with function copies bound to this instance.
-  // This avoids allocating new functions during callback chains.
-  proxify () {
-    this.proxy = {
-      setHeaders: this.setHeaders.bind(this),
-      options: this.options.bind(this),
-      empty: this.empty.bind(this),
-      error: this.error.bind(this),
-      final: this.final.bind(this)
+  // The last method called during a request.
+  final (payload) {
+    var res = payload.res
+    if (!res.headerSent) {
+      res.status(404).end()
     }
+    payload.free()
   }
 }
 

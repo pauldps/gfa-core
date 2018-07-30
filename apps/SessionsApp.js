@@ -1,8 +1,7 @@
 'use strict'
 
 const {BaseApp} = require('./BaseApp')
-
-const INVALID_FORMAT = {code: 'INVALID_FORMAT'}
+const {PayloadError} = require('../lib/PayloadError')
 
 // This mini app serves the API endpoints for session management.
 class SessionsApp extends BaseApp {
@@ -23,104 +22,93 @@ class SessionsApp extends BaseApp {
     this.password = options.password
     this.table = options.table || 'users'
     this.setFieldNames(options.fields)
-    this.build()
   }
 
   // POST /session
-  signIn (req, res) {
-    var primaryField = this.fields.primary
-    var passwordField = this.fields.password
+  signIn (payload) {
+    var app = payload.app
+    return app
+      .validate(payload)
+      .then(app.findUser)
+      .then(app.validatePassword)
+      .then(app.session.create)
+      .then(app.sessionInfo)
+  }
+
+  validate (payload) {
+    var {app, req} = payload
+    var primaryField = app.fields.primary
+    var passwordField = app.fields.password
     var primaryValue = req.body[primaryField]
     var passwordValue = req.body[passwordField]
     if (typeof primaryValue !== 'string' || typeof passwordValue !== 'string') {
-      return res.status(400).json(INVALID_FORMAT)
+      payload.status = 400
+      return Promise.reject(new PayloadError('INVALID_FORMAT', payload, 'SessionsApp#validate'))
     }
-    var conditions = [[primaryField, '=', primaryValue]]
-    this
-      .database
-      .query(
-        req, res,
-        this.table, conditions,
-        this.proxy.signInQueryResult
-      )
+    return Promise.resolve(payload)
   }
 
-  signInQueryResult (err, req, res, results) {
-    if (err) {
-      return this.error(err, req, res, 'signInQueryResult')
-    }
+  findUser (payload) {
+    var {app, req} = payload
+    var primaryField = app.fields.primary
+    var primaryValue = req.body[primaryField]
+    payload.metadata.queryConditions = [[primaryField, '=', primaryValue]]
+    return app.database.query(payload).then(app.findUserResult)
+  }
+
+  findUserResult (payload) {
+    var results = payload.metadata.queryResults
     if (!results || results.length === 0) {
-      return res.status(401).end()
+      payload.status = 401
+      return Promise.reject(new PayloadError('INVALID_CREDENTIALS', payload, 'SessionsApp#findUserResult'))
     }
-    var user = results[0]
-    res.locals.signInUser = user
-    var passwordField = this.fields.password
-    this
-      .password
-      .validate(
-        req, res,
-        user[passwordField], req.body[passwordField],
-        this.proxy.signInPasswordResult
-      )
+    payload.metadata.databaseUser = results[0]
+    return payload
   }
 
-  signInPasswordResult (err, req, res, valid) {
-    if (err) {
-      return this.error(err, req, res, 'signInPasswordResult')
-    }
+  validatePassword (payload) {
+    var app = payload.app
+    var passwordField = app.fields.password
+    var metadata = payload.metadata
+    metadata.password = payload.req.body[passwordField]
+    metadata.passwordHash = metadata.databaseUser[passwordField]
+    return app.password.validate(payload).then(app.signInPasswordResult)
+  }
+
+  signInPasswordResult (payload) {
+    var valid = payload.metadata.validPassword
     if (!valid) {
-      return res.status(401).end()
+      payload.status = 401
+      return Promise.reject(new PayloadError('INVALID_CREDENTIALS', payload, 'SessionsApp#signInPasswordResult'))
     }
-    this
-      .session
-      .create(
-        req, res,
-        res.locals.signInUser,
-        this.proxy.signInSessionResult
-      )
-  }
-
-  signInSessionResult (err, req, res) {
-    if (err) {
-      return this.error(err, req, res, 'signInSessionResult')
-    }
-    res.status(201).json(this.session.data(req, res))
+    payload.status = 201
+    return payload
   }
 
   // DELETE /session
-  signOut (req, res) {
-    this.session.authorize(req, res, this.proxy.signOutAuthorized)
-  }
-
-  signOutAuthorized (err, req, res) {
-    if (err) {
-      return this.error(err, req, res, 'signOutAuthorized')
-    }
-    this.session.destroy(req, res, this.proxy.signOutSessionDestroy)
-  }
-
-  signOutSessionDestroy (err, req, res) {
-    if (err) {
-      return this.error(err, req, res, 'signOutSessionDestroy')
-    }
-    this.empty(null, req, res)
+  signOut (payload) {
+    var app = payload.app
+    return app
+      .session
+      .authorize(payload)
+      .then(app.session.destroy)
+      .then(app.empty)
   }
 
   // GET /session
-  info (req, res) {
-    this.session.authorize(req, res, this.proxy.infoAuthorized)
+  info (payload) {
+    var app = payload.app
+    return app.session.authorize(payload).then(app.sessionInfo)
   }
 
-  infoAuthorized (err, req, res, sessionData) {
-    if (err) {
-      return this.error(err, req, res, 'infoAuthorized')
-    }
-    res.status(200).json(sessionData)
+  sessionInfo (payload) {
+    payload.res.json(payload.app.session.data(payload))
   }
 
   // HEAD /session
-  head (req, res) {
-    this.session.authorize(req, res, this.proxy.empty)
+  head (payload) {
+    var app = payload.app
+    return app.session.authorize(payload).then(app.empty)
   }
 
   setFieldNames (opts) {
@@ -128,20 +116,6 @@ class SessionsApp extends BaseApp {
     var options = opts || {}
     this.fields.primary = options.primary || 'username'
     this.fields.password = options.password || 'password'
-  }
-
-  proxify () {
-    super.proxify()
-    this.proxy.signIn = this.signIn.bind(this)
-    this.proxy.signInQueryResult = this.signInQueryResult.bind(this)
-    this.proxy.signInPasswordResult = this.signInPasswordResult.bind(this)
-    this.proxy.signInSessionResult = this.signInSessionResult.bind(this)
-    this.proxy.signOut = this.signOut.bind(this)
-    this.proxy.signOutAuthorized = this.signOutAuthorized.bind(this)
-    this.proxy.signOutSessionDestroy = this.signOutSessionDestroy.bind(this)
-    this.proxy.info = this.info.bind(this)
-    this.proxy.infoAuthorized = this.infoAuthorized.bind(this)
-    this.proxy.head = this.head.bind(this)
   }
 }
 
