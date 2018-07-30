@@ -12,7 +12,7 @@ class SessionAdapter {
     this.name = options.name || 'userSession'
     this.duration = options.duration || (24 * 60 * 60 * 1000)
     this.activeDuration = options.activeDuration || (1000 * 60 * 5)
-    this.expose = options.expose || []
+    this.expose = options.expose || ['id']
     this.proxify()
   }
 

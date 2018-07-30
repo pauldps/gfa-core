@@ -2,25 +2,52 @@
 
 const {DatabaseAdapter} = require('../../adapters/DatabaseAdapter')
 
+var nextId = 0
+
+// Memory-based database adapter for testing purposes.
 class MockDatabaseAdapter extends DatabaseAdapter {
-  query (req, res, table, conditions, callback) {
-    if (table !== 'users') {
-      return callback(null, req, res, [])
+  constructor (options) {
+    super(options)
+    this.tables = new Map()
+  }
+  query (req, res, tableName, conditions, callback) {
+    var table = this.getTable(tableName)
+    var results = []
+    var record
+    var condition
+    for (record of table) {
+      for (condition of conditions) {
+        if (condition[1] === '=') {
+          if (record[condition[0]] === condition[2]) {
+            results.push(Object.assign({}, record))
+          }
+        }
+      }
     }
-    if (!conditions || !conditions[0]) {
-      return callback(null, req, res, [])
+    return callback(null, req, res, results)
+  }
+
+  insert (req, res, tableName, data, callback) {
+    var table = this.getTable(tableName)
+    var id = ++nextId
+    var d = Object.assign({}, data)
+    d.id = id
+    table.push(d)
+    callback(null, req, res, id)
+  }
+
+  getTable (tableName) {
+    var table = this.tables.get(tableName)
+    if (!table) {
+      table = []
+      this.tables.set(tableName, table)
     }
-    if (conditions[0][0] !== 'username' && conditions[0][1] !== '=') {
-      return callback(null, req, res, [])
-    }
-    var username = conditions[0][2]
-    if (username === 'abc') {
-      return callback(null, req, res, [{id: 1, username: 'abc', password: '123'}])
-    }
-    if (username === 'def') {
-      return callback(null, req, res, [{id: 2, username: 'def', password: '456'}])
-    }
-    return callback(null, req, res, [])
+    return table
+  }
+
+  clearTable (tableName) {
+    var table = this.tables.get(tableName)
+    table.length = 0
   }
 }
 

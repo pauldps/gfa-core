@@ -6,7 +6,8 @@ const INVALID_FORMAT = {code: 'INVALID_FORMAT'}
 
 // This mini app serves the API endpoints for session management.
 class SessionsApp extends BaseApp {
-  constructor (options) {
+  constructor (opts) {
+    var options = opts || {}
     super(options)
     if (!options.session) {
       throw new Error('APP_SESSION_ADAPTER_REQUIRED')

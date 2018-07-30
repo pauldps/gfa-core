@@ -5,22 +5,42 @@ const {SessionAdapter} = require('../../adapters/SessionAdapter')
 // This mock can load two different sessions based on the
 //   value of the Authorization header.
 class MockSessionAdapter extends SessionAdapter {
+  constructor (options) {
+    super(options)
+    this.tables = null
+    this.app = null
+  }
+
   load (req, res, callback) {
-    if (req.header('authorization') === `abctoken${this.secret}`) {
-      res.locals.session = {id: 1, username: 'abc'}
-    } else if (req.header('authorization') === `deftoken${this.secret}`) {
-      res.locals.session = {id: 2, username: 'def'}
+    var [user, secret] = (req.header('authorization') || '').split('|')
+    if (secret !== this.secret) {
+      return callback(null, req, res)
     }
-    callback(null, req, res)
+    this.app.database.query(req, res, this.app.table, [[this.app.fields.primary, '=', user]], (_err, req, res, results) => {
+      var record = results[0]
+      var session = {}
+      var field
+      for (field of this.expose) {
+        session[field] = record[field]
+      }
+      res.locals.session = session
+      callback(null, req, res)
+    })
   }
 
   create (req, res, userRecord, callback) {
-    res.header('x-token', `${userRecord.username}token${this.secret}`)
-    if (userRecord.username === 'abc') {
-      res.locals.session = {id: 1, username: 'abc'}
-    } else if (userRecord.username === 'def') {
-      res.locals.session = {id: 2, username: 'def'}
-    }
+    var username = userRecord[this.app.fields.primary]
+    res.header('x-token', `${username}|${this.secret}`)
+    this.app.database.query(req, res, this.app.table, [[this.app.fields.primary, '=', username]], (_err, req, res, results) => {
+      var record = results[0]
+      var session = {}
+      var field
+      for (field of this.expose) {
+        session[field] = record[field]
+      }
+      res.locals.session = session
+      callback(null, req, res)
+    })
     callback(null, req, res)
   }
 
