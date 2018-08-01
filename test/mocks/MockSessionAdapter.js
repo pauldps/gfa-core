@@ -2,14 +2,9 @@
 
 const {SessionAdapter} = require('../../adapters/SessionAdapter')
 
-// This mock can load two different sessions based on the
-//   value of the Authorization header.
+// This mock loads base64-encoded tokens
+//   as session objects for testing purposes.
 class MockSessionAdapter extends SessionAdapter {
-  constructor (options) {
-    super(options)
-    this.tables = null
-  }
-
   load (req, res, callback) {
     var token = req.header('authorization')
     if (!token) {
@@ -18,7 +13,6 @@ class MockSessionAdapter extends SessionAdapter {
     try {
       var decode = JSON.parse(Buffer.from(req.header('authorization'), 'base64').toString('ascii'))
     } catch (err) {
-      console.error(err)
       return callback(null, req, res) // ignored as bad token
     }
     if (decode.secret !== this.secret) {
@@ -41,7 +35,7 @@ class MockSessionAdapter extends SessionAdapter {
   }
 
   destroy (req, res, callback) {
-    // nothing to do
+    // Nothing to do
     callback(null, req, res)
   }
 }

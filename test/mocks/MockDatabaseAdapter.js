@@ -1,15 +1,17 @@
 'use strict'
 
 const {DatabaseAdapter} = require('../../adapters/DatabaseAdapter')
+const {NotFoundError} = require('../../errors/NotFoundError')
 
 var nextId = 0
 
-// Memory-based database adapter for testing purposes.
+// Memory-based Database Adapter for testing purposes.
 class MockDatabaseAdapter extends DatabaseAdapter {
   constructor (options) {
     super(options)
     this.tables = new Map()
   }
+
   query (req, res, tableName, conditions, callback) {
     var table = this.getTable(tableName)
     var results = []
@@ -34,6 +36,19 @@ class MockDatabaseAdapter extends DatabaseAdapter {
     d.id = id
     table.push(d)
     callback(null, req, res, id)
+  }
+
+  replace (req, res, tableName, data, callback) {
+    var table = this.getTable(tableName)
+    var id = data.id
+    var record
+    for (record of table) {
+      if (record.id === id) {
+        Object.assign(record, data)
+        return callback(null, req, res, id)
+      }
+    }
+    callback(new NotFoundError(`${tableName}#${data.id} not found`), req, res, null)
   }
 
   getTable (tableName) {

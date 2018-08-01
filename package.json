@@ -30,9 +30,11 @@
   },
   "nyc": {
     "include": [
-      "apps/**/*.js",
-      "adapters/**/*.js",
-      "routers/**/*.js"
+      "adapters",
+      "apps",
+      "errors",
+      "policies",
+      "routers"
     ],
     "reporter": [
       "lcov",

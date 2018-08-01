@@ -14,7 +14,7 @@ class ResourceRouter extends BaseRouter {
     this.normalize(req, res)
     var fn = this.methods.get(req.method)
     if (fn) {
-      return fn(req, res)
+      fn(req, res)
     }
     this.final(req, res)
   }
@@ -25,7 +25,7 @@ class ResourceRouter extends BaseRouter {
     methods.set('POST', proxy.create)
     methods.set('PUT', proxy.replace)
     methods.set('PATCH', proxy.update)
-    methods.set('GET', this.listOrShow)
+    methods.set('GET', this.listOrShow.bind(this))
     methods.set('DELETE', proxy.delete)
     methods.set('OPTIONS', proxy.options)
     this.final = proxy.final || notFound

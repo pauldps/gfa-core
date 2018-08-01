@@ -42,6 +42,9 @@ class BaseApp {
     if (err.message === 'UNAUTHORIZED') {
       return res.status(401).end()
     }
+    if (err.message === 'NOT_FOUND') {
+      return res.status(404).end()
+    }
     console.error(source, err)
     res.status(500).json(INTERNAL_ERROR_RESPONSE)
   }
