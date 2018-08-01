@@ -8,39 +8,35 @@ class MockSessionAdapter extends SessionAdapter {
   constructor (options) {
     super(options)
     this.tables = null
-    this.app = null
   }
 
   load (req, res, callback) {
-    var [user, secret] = (req.header('authorization') || '').split('|')
-    if (secret !== this.secret) {
-      return callback(null, req, res)
+    var token = req.header('authorization')
+    if (!token) {
+      return callback(null, req, res) // ignored as bad token
     }
-    this.app.database.query(req, res, this.app.table, [[this.app.fields.primary, '=', user]], (_err, req, res, results) => {
-      var record = results[0]
-      var session = {}
-      var field
-      for (field of this.expose) {
-        session[field] = record[field]
-      }
-      res.locals.session = session
-      callback(null, req, res)
-    })
+    try {
+      var decode = JSON.parse(Buffer.from(req.header('authorization'), 'base64').toString('ascii'))
+    } catch (err) {
+      console.error(err)
+      return callback(null, req, res) // ignored as bad token
+    }
+    if (decode.secret !== this.secret) {
+      return callback(null, req, res) // ignored as bad token
+    }
+    res.locals.session = decode.data
+    callback(null, req, res)
   }
 
   create (req, res, userRecord, callback) {
-    var username = userRecord[this.app.fields.primary]
-    res.header('x-token', `${username}|${this.secret}`)
-    this.app.database.query(req, res, this.app.table, [[this.app.fields.primary, '=', username]], (_err, req, res, results) => {
-      var record = results[0]
-      var session = {}
-      var field
-      for (field of this.expose) {
-        session[field] = record[field]
-      }
-      res.locals.session = session
-      callback(null, req, res)
-    })
+    var session = {}
+    var field
+    for (field of this.expose) {
+      session[field] = userRecord[field]
+    }
+    res.locals.session = session
+    var encode = {data: session, secret: this.secret}
+    res.header('x-token', Buffer.from(JSON.stringify(encode)).toString('base64'))
     callback(null, req, res)
   }
 
