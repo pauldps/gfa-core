@@ -1,4 +1,5 @@
 --colors
 --recursive
 --check-leaks
+--globals errorMessage
 --require=./config/mocha.js
