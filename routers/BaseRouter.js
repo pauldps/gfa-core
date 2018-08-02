@@ -1,20 +1,17 @@
 'use strict'
 
 class BaseRouter {
-  constructor (opts) {
-    var options = opts || {}
-    this.firebasePath = options.firebasePath
+  constructor () {
+    this.app = null
+    this.methods = new Map()
   }
 
-  normalize (req, res) {
-    if (req.params['0']) {
-      if (this.firebasePath && req.params['0'].startsWith(this.firebasePath)) {
-        req.params['0'] = req.params['0'].replace(this.firebasePath, '')
-      }
-      if (req.params['0'] === '/') {
-        req.params['0'] = ''
-      }
+  handle (req, res) {
+    var fn = this.methods.get(req.method)
+    if (fn) {
+      fn(req, res)
     }
+    this.app.final(req, res)
   }
 }
 

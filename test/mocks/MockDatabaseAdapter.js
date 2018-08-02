@@ -38,17 +38,16 @@ class MockDatabaseAdapter extends DatabaseAdapter {
     callback(null, req, res, id)
   }
 
-  replace (req, res, tableName, data, callback) {
+  replace (req, res, tableName, id, data, callback) {
     var table = this.getTable(tableName)
-    var id = data.id
     var record
     for (record of table) {
       if (record.id === id) {
         Object.assign(record, data)
-        return callback(null, req, res, id)
+        return callback(null, req, res)
       }
     }
-    callback(new NotFoundError(`${tableName}#${data.id} not found`), req, res, null)
+    callback(new NotFoundError(`${tableName}#${id} not found`), req, res)
   }
 
   getTable (tableName) {

@@ -33,8 +33,18 @@ class ResourceApp extends BaseApp {
     callback(null, req, res)
   }
 
-  parse (recordOrArray) {
-    return recordOrArray
+  parseRecord (record) {
+    // Does nothing by default.
+    // Should be overwritten in a subclass.
+    return record
+  }
+
+  parseList (recordList) {
+    var record
+    for (record of recordList) {
+      this.parseRecord(record)
+    }
+    return recordList
   }
 
   // Timestamps a record (on create or update).
@@ -81,7 +91,7 @@ class ResourceApp extends BaseApp {
       return this.error(err, req, res, 'createSaved')
     }
     req.body.id = id
-    res.status(201).json(this.parse(req.body))
+    res.status(201).json(this.parseRecord(req.body))
   }
 
   // PUT /resources
@@ -93,7 +103,7 @@ class ResourceApp extends BaseApp {
     if (err) {
       return this.error(err, req, res, 'replaceAllowed')
     }
-    this.database.query(req, res, this.table, [['id', '=', req.body.id]], this.proxy.replaceFound)
+    this.database.query(req, res, this.table, [['id', '=', res.locals.resourceId]], this.proxy.replaceFound)
   }
 
   replaceFound (err, req, res, results) {
@@ -107,6 +117,13 @@ class ResourceApp extends BaseApp {
     if (req.partialUpdate) {
       Object.assign(record, req.body)
       req.body = record
+      delete req.body.id
+    } else {
+      // Protected properties
+      var created = this.timestamps.created
+      if (created) {
+        req.body[created] = record[created]
+      }
     }
     this.sanitize(req, res)
     this.validate(req, res, this.proxy.replaceValidated)
@@ -117,14 +134,15 @@ class ResourceApp extends BaseApp {
       return this.error(err, req, res, 'replaceValidated')
     }
     this.timestamp(req.body)
-    this.database.replace(req, res, this.table, req.body, this.proxy.replaceSaved)
+    this.database.replace(req, res, this.table, res.locals.resourceId, req.body, this.proxy.replaceSaved)
   }
 
   replaceSaved (err, req, res) {
     if (err) {
       return this.error(err, req, res, 'replaceSaved')
     }
-    res.status(200).json(this.parse(req.body))
+    req.body.id = res.locals.resourceId
+    res.status(200).json(this.parseRecord(req.body))
   }
 
   // PATCH /resources
@@ -149,7 +167,7 @@ class ResourceApp extends BaseApp {
     if (err) {
       return this.error(err, req, res, 'listResult')
     }
-    res.status(200).json(this.parse(results))
+    res.status(200).json(this.parseList(results))
   }
 
   // GET /resources/:id
@@ -172,7 +190,7 @@ class ResourceApp extends BaseApp {
     if (!record) {
       return this.error(new Error('NOT_FOUND'), req, res, 'showFound')
     }
-    res.status(200).json(this.parse(record))
+    res.status(200).json(this.parseRecord(record))
   }
 
   // DELETE /resources/:id
@@ -184,7 +202,17 @@ class ResourceApp extends BaseApp {
     if (err) {
       return this.error(err, req, res, 'deleteAllowed')
     }
-    this.database.delete(req, res, this.table, req.resourceId, this.proxy.empty)
+    this.database.delete(req, res, this.table, res.locals.resourceId, this.proxy.empty)
+  }
+
+  setResourceId (req, res) {
+    var path = req.url
+    if (typeof path === 'string' && path.length > 0) {
+      if (path[0] === '/') {
+        path = path.slice(1)
+      }
+      res.locals.resourceId = parseInt(path, 10)
+    }
   }
 
   proxify () {

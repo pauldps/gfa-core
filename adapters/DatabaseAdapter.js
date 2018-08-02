@@ -12,8 +12,8 @@ class DatabaseAdapter {
   }
 
   /* istanbul ignore next */
-  replace (req, res, _tableName, _data, callback) {
-    callback(new Error('DATABASE_ADAPTER_NOT_IMPLEMENTED'), req, res, null)
+  replace (req, res, _tableName, _id, _data, callback) {
+    callback(new Error('DATABASE_ADAPTER_NOT_IMPLEMENTED'), req, res)
   }
 
   /* istanbul ignore next */

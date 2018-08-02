@@ -3,45 +3,47 @@
 const {BaseRouter} = require('./BaseRouter')
 
 class ResourceRouter extends BaseRouter {
-  constructor (options) {
-    super(options)
-    this.methods = new Map()
-    this.final = notFound
-    this.app = null
-  }
-
-  handle (req, res) {
-    this.normalize(req, res)
-    var fn = this.methods.get(req.method)
-    if (fn) {
-      fn(req, res)
-    }
-    this.final(req, res)
-  }
-
-  build (proxy) {
-    this.app = proxy
+  build (app) {
+    this.app = app
+    var proxy = this.app.proxy
     var methods = this.methods
     methods.set('POST', proxy.create)
-    methods.set('PUT', proxy.replace)
-    methods.set('PATCH', proxy.update)
+    methods.set('PUT', this.replace.bind(this))
+    methods.set('PATCH', this.update.bind(this))
     methods.set('GET', this.listOrShow.bind(this))
-    methods.set('DELETE', proxy.delete)
+    methods.set('DELETE', this.delete.bind(this))
     methods.set('OPTIONS', proxy.options)
-    this.final = proxy.final || notFound
+  }
+
+  replace (req, res) {
+    this.app.setResourceId(req, res)
+    if (res.locals.resourceId) {
+      this.app.replace(req, res)
+    }
+  }
+
+  update (req, res) {
+    this.app.setResourceId(req, res)
+    if (res.locals.resourceId) {
+      this.app.update(req, res)
+    }
   }
 
   listOrShow (req, res) {
-    if (req.params['0'] !== '') {
-      res.locals.resourceId = req.params['0'].replace('/', '')
-      return this.app.show(req, res)
+    this.app.setResourceId(req, res)
+    if (res.locals.resourceId) {
+      this.app.show(req, res)
+    } else {
+      this.app.list(req, res)
     }
-    this.app.list(req, res)
   }
-}
 
-function notFound (_req, res) {
-  res.status(404).end()
+  delete (req, res) {
+    this.app.setResourceId(req, res)
+    if (res.locals.resourceId) {
+      this.app.delete(req, res)
+    }
+  }
 }
 
 exports.ResourceRouter = ResourceRouter

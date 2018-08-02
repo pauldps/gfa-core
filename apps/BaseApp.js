@@ -16,7 +16,7 @@ class BaseApp {
   }
 
   build () {
-    this.router.build(this.proxy)
+    this.router.build(this)
   }
 
   handle (req, res) {
@@ -50,7 +50,7 @@ class BaseApp {
   }
 
   final (_req, res) {
-    if (!res.headerSent) {
+    if (!res.headersSent) {
       res.status(404).end()
     }
   }
