@@ -10,8 +10,9 @@ class BaseRouter {
     var fn = this.methods.get(req.method)
     if (fn) {
       fn(req, res)
+    } else {
+      this.app.final(req, res)
     }
-    this.app.final(req, res)
   }
 }
 

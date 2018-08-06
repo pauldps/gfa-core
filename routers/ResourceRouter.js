@@ -19,6 +19,8 @@ class ResourceRouter extends BaseRouter {
     this.app.setResourceId(req, res)
     if (res.locals.resourceId) {
       this.app.replace(req, res)
+    } else {
+      this.app.final(req, res)
     }
   }
 
@@ -26,6 +28,8 @@ class ResourceRouter extends BaseRouter {
     this.app.setResourceId(req, res)
     if (res.locals.resourceId) {
       this.app.update(req, res)
+    } else {
+      this.app.final(req, res)
     }
   }
 
@@ -42,6 +46,8 @@ class ResourceRouter extends BaseRouter {
     this.app.setResourceId(req, res)
     if (res.locals.resourceId) {
       this.app.delete(req, res)
+    } else {
+      this.app.final(req, res)
     }
   }
 }
