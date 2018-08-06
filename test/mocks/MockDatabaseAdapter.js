@@ -16,6 +16,9 @@ class MockDatabaseAdapter extends DatabaseAdapter {
     var table = this.getTable(tableName)
     var results = []
     var record
+    if (!conditions || conditions.length === 0) {
+      return callback(null, req, res, table)
+    }
     var condition
     for (record of table) {
       for (condition of conditions) {
@@ -48,6 +51,20 @@ class MockDatabaseAdapter extends DatabaseAdapter {
       }
     }
     callback(new NotFoundError(`${tableName}#${id} not found`), req, res)
+  }
+
+  delete (req, res, tableName, id, callback) {
+    var table = this.getTable(tableName)
+    if (!table) {
+      return callback(new NotFoundError(), req, res)
+    }
+    for (var [index, record] of table.entries()) {
+      if (record.id === id) {
+        table.splice(index, 1)
+        return callback(null, req, res)
+      }
+    }
+    callback(new NotFoundError(), req, res)
   }
 
   getTable (tableName) {

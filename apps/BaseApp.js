@@ -39,10 +39,10 @@ class BaseApp {
   // Used only for uncaught errors.
   // Error details should be logged, but not exposed.
   error (err, req, res, source) {
-    if (err.message === 'UNAUTHORIZED') {
+    if (err.message === 'UNAUTHORIZED' || err.status === 401) {
       return res.status(401).end()
     }
-    if (err.message === 'NOT_FOUND') {
+    if (err.message === 'NOT_FOUND' || err.status === 404) {
       return res.status(404).end()
     }
     console.error(source, err)

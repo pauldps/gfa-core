@@ -160,7 +160,7 @@ class ResourceApp extends BaseApp {
     if (err) {
       return this.error(err, req, res, 'listAllowed')
     }
-    this.database.query(req, res, this.table, [], this.listResult)
+    this.database.query(req, res, this.table, [], this.proxy.listResult)
   }
 
   listResult (err, req, res, results) {
