@@ -22,6 +22,9 @@ class MockDatabaseAdapter extends DatabaseAdapter {
     var condition
     for (record of table) {
       for (condition of conditions) {
+        if (condition[0] === 'id') {
+          condition[2] = parseInt(condition[2], 10)
+        }
         if (condition[1] === '=') {
           if (record[condition[0]] === condition[2]) {
             results.push(Object.assign({}, record))
@@ -42,6 +45,7 @@ class MockDatabaseAdapter extends DatabaseAdapter {
   }
 
   replace (req, res, tableName, id, data, callback) {
+    id = parseInt(id, 10)
     var table = this.getTable(tableName)
     var record
     for (record of table) {
@@ -54,6 +58,7 @@ class MockDatabaseAdapter extends DatabaseAdapter {
   }
 
   delete (req, res, tableName, id, callback) {
+    id = parseInt(id, 10)
     var table = this.getTable(tableName)
     if (!table) {
       return callback(new NotFoundError(), req, res)

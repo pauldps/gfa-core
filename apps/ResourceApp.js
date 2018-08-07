@@ -211,7 +211,7 @@ class ResourceApp extends BaseApp {
       if (path[0] === '/') {
         path = path.slice(1)
       }
-      res.locals.resourceId = parseInt(path, 10)
+      res.locals.resourceId = path
     }
   }
 
