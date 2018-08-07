@@ -1,6 +1,12 @@
 'use strict'
 
 class DatabaseAdapter {
+  constructor () {
+    // If true, insert() method will use data.id to assign
+    //   the record's id instead of relying on auto generation.
+    this.customId = false
+  }
+
   /* istanbul ignore next */
   query (req, res, _tableName, _conditions, callback) {
     callback(new Error('DATABASE_ADAPTER_NOT_IMPLEMENTED'), req, res, null)
