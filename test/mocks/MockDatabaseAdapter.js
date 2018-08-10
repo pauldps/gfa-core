@@ -80,11 +80,6 @@ class MockDatabaseAdapter extends DatabaseAdapter {
     }
     return table
   }
-
-  clearTable (tableName) {
-    var table = this.tables.get(tableName)
-    table.length = 0
-  }
 }
 
 exports.MockDatabaseAdapter = MockDatabaseAdapter
