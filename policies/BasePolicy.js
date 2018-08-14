@@ -26,6 +26,10 @@ class BasePolicy {
   delete (req, res, callback) {
     callback(new ForbiddenError('POLICY_NOT_IMPLEMENTED'), req, res)
   }
+
+  record (req, res, recordInstance, callback) {
+    callback(new ForbiddenError('POLICY_NOT_IMPLEMENTED'), req, res)
+  }
 }
 
 exports.BasePolicy = BasePolicy

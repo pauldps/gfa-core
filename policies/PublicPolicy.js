@@ -22,6 +22,10 @@ class PublicPolicy extends BasePolicy {
   delete (req, res, callback) {
     callback(null, req, res)
   }
+
+  record (req, res, recordInstance, callback) {
+    callback(null, req, res)
+  }
 }
 
 exports.PublicPolicy = PublicPolicy

@@ -1,5 +1,8 @@
 # @gf-apis/core
 
+[![Build Status](https://travis-ci.com/gf-apis/core.svg?branch=master)](https://travis-ci.com/gf-apis/core)
+[![Coverage Status](https://coveralls.io/repos/github/gf-apis/core/badge.svg?branch=master)](https://coveralls.io/github/gf-apis/core?branch=master)
+
 This is the base project for the family of [@gf-apis](https://github.com/gf-apis) components.
 
 It provides a number of base classes for other packages to extend from.
