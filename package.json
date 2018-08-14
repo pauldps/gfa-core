@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "standard --fix && nyc mocha",
-    "report": "npm install -g codeclimate-test-reporter && codeclimate-test-reporter < coverage/lcov.info"
+    "report": "nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {
     "type": "git",
@@ -22,6 +22,7 @@
     "body-parser": "1.17.1",
     "chai": "4.1.2",
     "chai-http": "4.0.0",
+    "coveralls": "3.0.2",
     "dirty-chai": "2.0.1",
     "express": "4.15.2",
     "mocha": "5.2.0",
