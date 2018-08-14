@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "standard --fix && nyc mocha",
-    "report": "nyc report --reporter=text-lcov | coveralls"
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {
     "type": "git",
