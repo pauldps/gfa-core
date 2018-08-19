@@ -2,6 +2,14 @@
 
 const INTERNAL_ERROR_RESPONSE = {code: 'INTERNAL_ERROR'}
 
+const CORS_HEADERS = [
+  // ['Access-Control-Allow-Origin', '*'],
+  ['Access-Control-Allow-Methods', 'OPTIONS,GET,HEAD,POST,PUT,PATCH,DELETE'],
+  ['Access-Control-Allow-Headers', 'X-Requested-With,Content-Type'],
+  ['Access-Control-Allow-Credentials', 'true'],
+  ['Access-Control-Max-Age', '86400']
+]
+
 class BaseApp {
   constructor (options) {
     if (!options) {
@@ -12,6 +20,7 @@ class BaseApp {
     }
     this.router = options.router
     this.headers = options.headers || []
+    this.cors = options.cors || false
     this.proxify()
   }
 
@@ -55,8 +64,16 @@ class BaseApp {
     }
   }
 
-  setHeaders (_req, res) {
+  setHeaders (req, res) {
     var header
+    if (this.cors === true || this.cors === 'dev') {
+      for (header of CORS_HEADERS) {
+        res.header(header[0], header[1])
+      }
+      if (this.cors === 'dev') {
+        res.header('Access-Control-Allow-Origin', req.get('origin'))
+      }
+    }
     for (header of this.headers) {
       res.header(header[0], header[1])
     }
