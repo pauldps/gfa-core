@@ -72,6 +72,7 @@ class BaseApp {
       }
       if (this.cors === 'dev') {
         res.header('Access-Control-Allow-Origin', req.get('origin'))
+        res.header('Vary', 'Origin')
       }
     }
     for (header of this.headers) {
