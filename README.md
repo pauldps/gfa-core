@@ -1,9 +1,9 @@
-# @gf-apis/core
+# @gfa/core
 
-[![Build Status](https://travis-ci.com/gf-apis/core.svg?branch=master)](https://travis-ci.com/gf-apis/core)
-[![Coverage Status](https://coveralls.io/repos/github/gf-apis/core/badge.svg?branch=master)](https://coveralls.io/github/gf-apis/core?branch=master)
+[![Build Status](https://travis-ci.com/pauloddr/gfa-core.svg?branch=master)](https://travis-ci.com/pauloddr/gfa-core)
+[![Coverage Status](https://coveralls.io/repos/github/pauloddr/gfa-core/badge.svg?branch=master)](https://coveralls.io/github/pauloddr/gfa-core?branch=master)
 
-This is the base project for the family of [@gf-apis](https://github.com/gf-apis) components.
+This is the base project for the family of __@gfa/*__ components.
 
 It provides a number of base classes for other packages to extend from.
 
@@ -48,31 +48,31 @@ Example of endpoints served for a Google Function named "tasks":
 
 Each major functionality of an app (namely: session management, database storage, and password verification) relies on an adapter.
 
-The following is the rough implementation of the [__sessions-app__](https://github.com/gf-apis/session-app) project with opinionated adapters (ClientSessions, Google Datastore and Bcrypt):
+The following is the rough implementation of the [__@gfa/sessions-api__](https://github.com/pauloddr/gfa-session-api) project with opinionated adapters (ClientSessions, Google Datastore and Bcrypt):
 
 ```javascript
-const ClientSessionsAdapter = require('@gf-apis/client-sessions-adapter')
+const ClientSessionsAdapter = require('@gfa/client-sessions-adapter')
 const sessionAdapter = new ClientSessionsAdapter({
   secret: 'MYSECRET',
   // ... session settings go here
 })
 
-const GoogleDatastoreAdapter = require('@gf-apis/datastore-adapter')
+const GoogleDatastoreAdapter = require('@gfa/datastore-adapter')
 const databaseAdapter = new GoogleDatastoreAdapter({
   // ... database settings go here
 })
 
-const BcryptAdapter = require('@gf-apis/bcrypt-adapter')
+const BcryptAdapter = require('@gfa/bcrypt-adapter')
 const passwordAdapter = new BcryptAdapter({
   // ... password settings go here
 })
 
-const ExpressSessionsRouter = require('@gf-apis/express-sessions-router')
+const ExpressSessionsRouter = require('@gfa/express-sessions-router')
 const router = new ExpressSessionRouter({
   // ... router settings go here
 })
 
-const {SessionsApp} = require('@gf-apis/core/apps/SessionsApp')
+const {SessionsApp} = require('@gfa/core/apps/SessionsApp')
 const app = new SessionsApp({
   session: sessionAdapter,
   database: databaseAdapter,

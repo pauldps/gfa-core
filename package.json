@@ -1,7 +1,7 @@
 {
-  "name": "@gf-apis/core",
+  "name": "@gfa/core",
   "version": "0.2.0",
-  "description": "Base project for @gf-apis components",
+  "description": "Base project for @gfa/* components",
   "main": "index.js",
   "scripts": {
     "test": "standard --fix && nyc mocha",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gf-apis/core.git"
+    "url": "git+https://github.com/pauloddr/gfa-core.git"
   },
-  "author": "Panayotis Procopiou <gfapis@pauloddr.com>",
+  "author": "Panayotis Procopiou <gfa@pauloddr.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/gf-apis/core/issues"
+    "url": "https://github.com/pauloddr/gfa-core/issues"
   },
-  "homepage": "https://github.com/gf-apis/core#readme",
+  "homepage": "https://github.com/pauloddr/gfa-core#readme",
   "dependencies": {},
   "devDependencies": {
     "body-parser": "1.17.1",
