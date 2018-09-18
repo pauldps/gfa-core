@@ -19,7 +19,7 @@
   "homepage": "https://github.com/pauloddr/gfa-core#readme",
   "dependencies": {},
   "devDependencies": {
-    "body-parser": "1.17.1",
+    "body-parser": "1.18.3",
     "chai": "4.1.2",
     "chai-http": "4.0.0",
     "coveralls": "3.0.2",
