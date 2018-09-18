@@ -24,7 +24,7 @@
     "chai-http": "4.0.0",
     "coveralls": "3.0.2",
     "dirty-chai": "2.0.1",
-    "express": "4.15.2",
+    "express": "4.16.3",
     "mocha": "5.2.0",
     "nyc": "10.3.0",
     "standard": "*"
