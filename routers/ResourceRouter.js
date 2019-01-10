@@ -5,14 +5,13 @@ const {BaseRouter} = require('./BaseRouter')
 class ResourceRouter extends BaseRouter {
   build (app) {
     this.app = app
-    var proxy = this.app.proxy
     var methods = this.methods
-    methods.set('POST', proxy.create)
-    methods.set('PUT', this.replace.bind(this))
-    methods.set('PATCH', this.update.bind(this))
-    methods.set('GET', this.listOrShow.bind(this))
-    methods.set('DELETE', this.delete.bind(this))
-    methods.set('OPTIONS', proxy.options)
+    methods.set('POST', app.create)
+    methods.set('PUT', this.replace)
+    methods.set('PATCH', this.update)
+    methods.set('GET', this.listOrShow)
+    methods.set('DELETE', this.delete)
+    methods.set('OPTIONS', app.options)
   }
 
   replace (req, res) {
@@ -49,6 +48,13 @@ class ResourceRouter extends BaseRouter {
     } else {
       this.app.final(req, res)
     }
+  }
+
+  bindMethods () {
+    this.replace = this.replace.bind(this)
+    this.update = this.update.bind(this)
+    this.listOrShow = this.listOrShow.bind(this)
+    this.delete = this.delete.bind(this)
   }
 }
 

@@ -41,7 +41,7 @@ class SessionsApp extends BaseApp {
       .query(
         req, res,
         this.table, conditions,
-        this.proxy.signInQueryResult
+        this.signInQueryResult
       )
   }
 
@@ -60,7 +60,7 @@ class SessionsApp extends BaseApp {
       .validate(
         req, res,
         user[passwordField], req.body[passwordField],
-        this.proxy.signInPasswordResult
+        this.signInPasswordResult
       )
   }
 
@@ -76,7 +76,7 @@ class SessionsApp extends BaseApp {
       .create(
         req, res,
         res.locals.signInUser,
-        this.proxy.signInSessionResult
+        this.signInSessionResult
       )
   }
 
@@ -89,14 +89,14 @@ class SessionsApp extends BaseApp {
 
   // DELETE /session
   signOut (req, res) {
-    this.session.authorize(req, res, this.proxy.signOutAuthorized)
+    this.session.authorize(req, res, this.signOutAuthorized)
   }
 
   signOutAuthorized (err, req, res) {
     if (err) {
       return this.error(err, req, res, 'signOutAuthorized')
     }
-    this.session.destroy(req, res, this.proxy.signOutSessionDestroy)
+    this.session.destroy(req, res, this.signOutSessionDestroy)
   }
 
   signOutSessionDestroy (err, req, res) {
@@ -108,7 +108,7 @@ class SessionsApp extends BaseApp {
 
   // GET /session
   info (req, res) {
-    this.session.authorize(req, res, this.proxy.infoAuthorized)
+    this.session.authorize(req, res, this.infoAuthorized)
   }
 
   infoAuthorized (err, req, res, sessionData) {
@@ -120,7 +120,7 @@ class SessionsApp extends BaseApp {
 
   // HEAD /session
   head (req, res) {
-    this.session.authorize(req, res, this.proxy.empty)
+    this.session.authorize(req, res, this.empty)
   }
 
   setFieldNames (opts) {
@@ -130,18 +130,18 @@ class SessionsApp extends BaseApp {
     this.fields.password = options.password || 'password'
   }
 
-  proxify () {
-    super.proxify()
-    this.proxy.signIn = this.signIn.bind(this)
-    this.proxy.signInQueryResult = this.signInQueryResult.bind(this)
-    this.proxy.signInPasswordResult = this.signInPasswordResult.bind(this)
-    this.proxy.signInSessionResult = this.signInSessionResult.bind(this)
-    this.proxy.signOut = this.signOut.bind(this)
-    this.proxy.signOutAuthorized = this.signOutAuthorized.bind(this)
-    this.proxy.signOutSessionDestroy = this.signOutSessionDestroy.bind(this)
-    this.proxy.info = this.info.bind(this)
-    this.proxy.infoAuthorized = this.infoAuthorized.bind(this)
-    this.proxy.head = this.head.bind(this)
+  bindMethods () {
+    super.bindMethods()
+    this.signIn = this.signIn.bind(this)
+    this.signInQueryResult = this.signInQueryResult.bind(this)
+    this.signInPasswordResult = this.signInPasswordResult.bind(this)
+    this.signInSessionResult = this.signInSessionResult.bind(this)
+    this.signOut = this.signOut.bind(this)
+    this.signOutAuthorized = this.signOutAuthorized.bind(this)
+    this.signOutSessionDestroy = this.signOutSessionDestroy.bind(this)
+    this.info = this.info.bind(this)
+    this.infoAuthorized = this.infoAuthorized.bind(this)
+    this.head = this.head.bind(this)
   }
 }
 

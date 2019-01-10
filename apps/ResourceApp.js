@@ -66,7 +66,7 @@ class ResourceApp extends BaseApp {
 
   // POST /resources
   create (req, res) {
-    this.policy.create(req, res, this.proxy.createAllowed)
+    this.policy.create(req, res, this.createAllowed)
   }
 
   createAllowed (err, req, res) {
@@ -75,7 +75,7 @@ class ResourceApp extends BaseApp {
     }
     this.sanitize(req, res)
     delete req.body.id
-    this.validate(req, res, this.proxy.createValidated)
+    this.validate(req, res, this.createValidated)
   }
 
   createValidated (err, req, res) {
@@ -83,7 +83,7 @@ class ResourceApp extends BaseApp {
       return this.error(err, req, res, 'createValidated')
     }
     this.timestamp(req.body)
-    this.database.insert(req, res, this.table, req.body, this.proxy.createSaved)
+    this.database.insert(req, res, this.table, req.body, this.createSaved)
   }
 
   createSaved (err, req, res, id) {
@@ -96,14 +96,14 @@ class ResourceApp extends BaseApp {
 
   // PUT /resources
   replace (req, res) {
-    this.policy.update(req, res, this.proxy.replaceAllowed)
+    this.policy.update(req, res, this.replaceAllowed)
   }
 
   replaceAllowed (err, req, res) {
     if (err) {
       return this.error(err, req, res, 'replaceAllowed')
     }
-    this.database.query(req, res, this.table, [['id', '=', res.locals.resourceId]], this.proxy.replaceFound)
+    this.database.query(req, res, this.table, [['id', '=', res.locals.resourceId]], this.replaceFound)
   }
 
   replaceFound (err, req, res, results) {
@@ -126,7 +126,7 @@ class ResourceApp extends BaseApp {
       }
     }
     this.sanitize(req, res)
-    this.validate(req, res, this.proxy.replaceValidated)
+    this.validate(req, res, this.replaceValidated)
   }
 
   replaceValidated (err, req, res) {
@@ -134,7 +134,7 @@ class ResourceApp extends BaseApp {
       return this.error(err, req, res, 'replaceValidated')
     }
     this.timestamp(req.body)
-    this.database.replace(req, res, this.table, res.locals.resourceId, req.body, this.proxy.replaceSaved)
+    this.database.replace(req, res, this.table, res.locals.resourceId, req.body, this.replaceSaved)
   }
 
   replaceSaved (err, req, res) {
@@ -153,14 +153,14 @@ class ResourceApp extends BaseApp {
 
   // GET /resources
   list (req, res) {
-    this.policy.list(req, res, this.proxy.listAllowed)
+    this.policy.list(req, res, this.listAllowed)
   }
 
   listAllowed (err, req, res) {
     if (err) {
       return this.error(err, req, res, 'listAllowed')
     }
-    this.database.query(req, res, this.table, [], this.proxy.listResult)
+    this.database.query(req, res, this.table, [], this.listResult)
   }
 
   listResult (err, req, res, results) {
@@ -172,14 +172,14 @@ class ResourceApp extends BaseApp {
 
   // GET /resources/:id
   show (req, res) {
-    this.policy.show(req, res, this.proxy.showAllowed)
+    this.policy.show(req, res, this.showAllowed)
   }
 
   showAllowed (err, req, res) {
     if (err) {
       return this.error(err, req, res, 'showAllowed')
     }
-    this.database.query(req, res, this.table, [['id', '=', res.locals.resourceId]], this.proxy.showFound)
+    this.database.query(req, res, this.table, [['id', '=', res.locals.resourceId]], this.showFound)
   }
 
   showFound (err, req, res, results) {
@@ -195,14 +195,14 @@ class ResourceApp extends BaseApp {
 
   // DELETE /resources/:id
   delete (req, res) {
-    this.policy.delete(req, res, this.proxy.deleteAllowed)
+    this.policy.delete(req, res, this.deleteAllowed)
   }
 
   deleteAllowed (err, req, res) {
     if (err) {
       return this.error(err, req, res, 'deleteAllowed')
     }
-    this.database.delete(req, res, this.table, res.locals.resourceId, this.proxy.empty)
+    this.database.delete(req, res, this.table, res.locals.resourceId, this.empty)
   }
 
   setResourceId (req, res) {
@@ -215,26 +215,26 @@ class ResourceApp extends BaseApp {
     }
   }
 
-  proxify () {
-    super.proxify()
-    this.proxy.create = this.create.bind(this)
-    this.proxy.replace = this.replace.bind(this)
-    this.proxy.update = this.update.bind(this)
-    this.proxy.list = this.list.bind(this)
-    this.proxy.show = this.show.bind(this)
-    this.proxy.delete = this.delete.bind(this)
-    this.proxy.createAllowed = this.createAllowed.bind(this)
-    this.proxy.createValidated = this.createValidated.bind(this)
-    this.proxy.createSaved = this.createSaved.bind(this)
-    this.proxy.replaceAllowed = this.replaceAllowed.bind(this)
-    this.proxy.replaceFound = this.replaceFound.bind(this)
-    this.proxy.replaceValidated = this.replaceValidated.bind(this)
-    this.proxy.replaceSaved = this.replaceSaved.bind(this)
-    this.proxy.listAllowed = this.listAllowed.bind(this)
-    this.proxy.listResult = this.listResult.bind(this)
-    this.proxy.showAllowed = this.showAllowed.bind(this)
-    this.proxy.showFound = this.showFound.bind(this)
-    this.proxy.deleteAllowed = this.deleteAllowed.bind(this)
+  bindMethods () {
+    super.bindMethods()
+    this.create = this.create.bind(this)
+    this.replace = this.replace.bind(this)
+    this.update = this.update.bind(this)
+    this.list = this.list.bind(this)
+    this.show = this.show.bind(this)
+    this.delete = this.delete.bind(this)
+    this.createAllowed = this.createAllowed.bind(this)
+    this.createValidated = this.createValidated.bind(this)
+    this.createSaved = this.createSaved.bind(this)
+    this.replaceAllowed = this.replaceAllowed.bind(this)
+    this.replaceFound = this.replaceFound.bind(this)
+    this.replaceValidated = this.replaceValidated.bind(this)
+    this.replaceSaved = this.replaceSaved.bind(this)
+    this.listAllowed = this.listAllowed.bind(this)
+    this.listResult = this.listResult.bind(this)
+    this.showAllowed = this.showAllowed.bind(this)
+    this.showFound = this.showFound.bind(this)
+    this.deleteAllowed = this.deleteAllowed.bind(this)
   }
 }
 

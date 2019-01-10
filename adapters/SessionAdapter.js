@@ -13,14 +13,14 @@ class SessionAdapter {
     this.duration = options.duration || (24 * 60 * 60 * 1000)
     this.activeDuration = options.activeDuration || (1000 * 60 * 5)
     this.expose = options.expose || ['id']
-    this.proxify()
+    this.bindMethods()
   }
 
   // This method verifies the presence of credentials to validate the request.
   // It can also be called by other Google Functions that require authorization.
   authorize (req, res, callback) {
     req.authorizeCallback = callback
-    this.load(req, res, this.proxy.authorizeLoaded)
+    this.load(req, res, this.authorizeLoaded)
   }
 
   // This is called after session data is loaded.
@@ -69,10 +69,8 @@ class SessionAdapter {
     return res.locals.session
   }
 
-  proxify () {
-    this.proxy = {
-      authorizeLoaded: this.authorizeLoaded.bind(this)
-    }
+  bindMethods () {
+    this.authorizeLoaded = this.authorizeLoaded.bind(this)
   }
 }
 

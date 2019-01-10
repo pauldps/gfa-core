@@ -4,6 +4,7 @@ class BaseRouter {
   constructor () {
     this.app = null
     this.methods = new Map()
+    this.bindMethods()
   }
 
   handle (req, res) {
@@ -13,6 +14,10 @@ class BaseRouter {
     } else {
       this.app.final(req, res)
     }
+  }
+
+  bindMethods () {
+    this.handle = this.handle.bind(this)
   }
 }
 

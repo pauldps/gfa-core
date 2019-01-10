@@ -21,7 +21,7 @@ class BaseApp {
     this.router = options.router
     this.headers = options.headers || []
     this.cors = options.cors || false
-    this.proxify()
+    this.bindMethods()
   }
 
   build () {
@@ -80,16 +80,12 @@ class BaseApp {
     }
   }
 
-  // Create a "proxy" object with function copies bound to this instance.
-  // This avoids allocating new functions during callback chains.
-  proxify () {
-    this.proxy = {
-      setHeaders: this.setHeaders.bind(this),
-      options: this.options.bind(this),
-      empty: this.empty.bind(this),
-      error: this.error.bind(this),
-      final: this.final.bind(this)
-    }
+  bindMethods () {
+    this.setHeaders = this.setHeaders.bind(this)
+    this.options = this.options.bind(this)
+    this.empty = this.empty.bind(this)
+    this.error = this.error.bind(this)
+    this.final = this.final.bind(this)
   }
 }
 
