@@ -1,6 +1,7 @@
 'use strict'
 
-const {ForbiddenError} = require('../errors/ForbiddenError')
+const { ForbiddenError } = require('../errors/ForbiddenError')
+const { UnauthorizedError } = require('../errors/UnauthorizedError')
 
 class BasePolicy {
   constructor (app) {
@@ -8,27 +9,31 @@ class BasePolicy {
   }
 
   create (req, res, callback) {
-    callback(new ForbiddenError('POLICY_NOT_IMPLEMENTED'), req, res)
+    this.forbidden(req, res, 'POLICY_NOT_IMPLEMENTED', callback)
   }
 
-  update (req, res, callback) {
-    callback(new ForbiddenError('POLICY_NOT_IMPLEMENTED'), req, res)
+  update (req, res, record, callback) {
+    this.forbidden(req, res, 'POLICY_NOT_IMPLEMENTED', callback)
   }
 
   list (req, res, callback) {
-    callback(new ForbiddenError('POLICY_NOT_IMPLEMENTED'), req, res)
+    this.forbidden(req, res, 'POLICY_NOT_IMPLEMENTED', callback)
   }
 
-  show (req, res, callback) {
-    callback(new ForbiddenError('POLICY_NOT_IMPLEMENTED'), req, res)
+  show (req, res, record, callback) {
+    this.forbidden(req, res, 'POLICY_NOT_IMPLEMENTED', callback)
   }
 
-  delete (req, res, callback) {
-    callback(new ForbiddenError('POLICY_NOT_IMPLEMENTED'), req, res)
+  delete (req, res, record, callback) {
+    this.forbidden(req, res, 'POLICY_NOT_IMPLEMENTED', callback)
   }
 
-  record (req, res, recordInstance, callback) {
-    callback(new ForbiddenError('POLICY_NOT_IMPLEMENTED'), req, res)
+  forbidden (req, res, message, callback) {
+    callback(new ForbiddenError(message), req, res)
+  }
+
+  unauthorized (req, res, callback) {
+    callback(new UnauthorizedError(), req, res)
   }
 }
 

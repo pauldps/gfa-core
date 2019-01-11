@@ -1,13 +1,13 @@
 'use strict'
 
-const {BasePolicy} = require('./BasePolicy')
+const { BasePolicy } = require('./BasePolicy')
 
 class PublicPolicy extends BasePolicy {
   create (req, res, callback) {
     callback(null, req, res)
   }
 
-  update (req, res, callback) {
+  update (req, res, record, callback) {
     callback(null, req, res)
   }
 
@@ -15,15 +15,11 @@ class PublicPolicy extends BasePolicy {
     callback(null, req, res)
   }
 
-  show (req, res, callback) {
+  show (req, res, record, callback) {
     callback(null, req, res)
   }
 
-  delete (req, res, callback) {
-    callback(null, req, res)
-  }
-
-  record (req, res, recordInstance, callback) {
+  delete (req, res, record, callback) {
     callback(null, req, res)
   }
 }

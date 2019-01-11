@@ -1,6 +1,6 @@
 'use strict'
 
-const INTERNAL_ERROR_RESPONSE = {code: 'INTERNAL_ERROR'}
+const INTERNAL_ERROR_RESPONSE = { code: 'INTERNAL_ERROR' }
 
 const CORS_HEADERS = [
   // ['Access-Control-Allow-Origin', '*'],

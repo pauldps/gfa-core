@@ -2,9 +2,9 @@
 
 const chai = require('chai')
 const expect = chai.expect
-const {emulator, setApp} = require('../support/emulator')
-const {BaseApp} = require('../../apps/BaseApp')
-const {BaseRouter} = require('../../routers/BaseRouter')
+const { emulator, setApp } = require('../support/emulator')
+const { BaseApp } = require('../../apps/BaseApp')
+const { BaseRouter } = require('../../routers/BaseRouter')
 
 describe('BaseApp', function () {
   describe('cors', function () {

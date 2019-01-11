@@ -1,7 +1,7 @@
 'use strict'
 
-const {BaseApp} = require('./BaseApp')
-const {PublicPolicy} = require('../policies/PublicPolicy')
+const { BaseApp } = require('./BaseApp')
+const { PublicPolicy } = require('../policies/PublicPolicy')
 
 class ResourceApp extends BaseApp {
   constructor (options) {
@@ -13,9 +13,10 @@ class ResourceApp extends BaseApp {
       throw new Error('RESOURCE_APP_TABLE_REQUIRED')
     }
     this.database = options.database
+    this.session = options.session
     this.table = options.table
     this.policy = options.policy || new PublicPolicy(this)
-    this.timestamps = options.timestamps || {enabled: false}
+    this.timestamps = options.timestamps || { enabled: false }
     if (this.timestamps.created || this.timestamps.updated) {
       this.timestamps.enabled = true
     }
@@ -33,16 +34,16 @@ class ResourceApp extends BaseApp {
     callback(null, req, res)
   }
 
-  parseRecord (record) {
+  parseRecord (record, req, res) {
     // Does nothing by default.
     // Should be overwritten in a subclass.
     return record
   }
 
-  parseList (recordList) {
+  parseList (recordList, req, res) {
     var record
     for (record of recordList) {
-      this.parseRecord(record)
+      this.parseRecord(record, req, res)
     }
     return recordList
   }
@@ -91,18 +92,11 @@ class ResourceApp extends BaseApp {
       return this.error(err, req, res, 'createSaved')
     }
     req.body.id = id
-    res.status(201).json(this.parseRecord(req.body))
+    res.status(201).json(this.parseRecord(req.body, req, res))
   }
 
   // PUT /resources
   replace (req, res) {
-    this.policy.update(req, res, this.replaceAllowed)
-  }
-
-  replaceAllowed (err, req, res) {
-    if (err) {
-      return this.error(err, req, res, 'replaceAllowed')
-    }
     this.database.query(req, res, this.table, [['id', '=', res.locals.resourceId]], this.replaceFound)
   }
 
@@ -114,6 +108,15 @@ class ResourceApp extends BaseApp {
     if (!record) {
       return this.error(new Error('NOT_FOUND'), req, res, 'replaceFound')
     }
+    res.locals.record = record
+    this.policy.update(req, res, record, this.replaceAllowed)
+  }
+
+  replaceAllowed (err, req, res) {
+    if (err) {
+      return this.error(err, req, res, 'replaceAllowed')
+    }
+    var record = res.locals.record
     if (req.partialUpdate) {
       Object.assign(record, req.body)
       req.body = record
@@ -142,7 +145,7 @@ class ResourceApp extends BaseApp {
       return this.error(err, req, res, 'replaceSaved')
     }
     req.body.id = res.locals.resourceId
-    res.status(200).json(this.parseRecord(req.body))
+    res.status(200).json(this.parseRecord(req.body, req, res))
   }
 
   // PATCH /resources
@@ -167,18 +170,11 @@ class ResourceApp extends BaseApp {
     if (err) {
       return this.error(err, req, res, 'listResult')
     }
-    res.status(200).json(this.parseList(results))
+    res.status(200).json(this.parseList(results, req, res))
   }
 
   // GET /resources/:id
   show (req, res) {
-    this.policy.show(req, res, this.showAllowed)
-  }
-
-  showAllowed (err, req, res) {
-    if (err) {
-      return this.error(err, req, res, 'showAllowed')
-    }
     this.database.query(req, res, this.table, [['id', '=', res.locals.resourceId]], this.showFound)
   }
 
@@ -190,25 +186,45 @@ class ResourceApp extends BaseApp {
     if (!record) {
       return this.error(new Error('NOT_FOUND'), req, res, 'showFound')
     }
-    res.status(200).json(this.parseRecord(record))
+    res.locals.record = record
+    this.policy.show(req, res, record, this.showAllowed)
+  }
+
+  showAllowed (err, req, res) {
+    if (err) {
+      return this.error(err, req, res, 'showAllowed')
+    }
+    res.status(200).json(this.parseRecord(res.locals.record, req, res))
   }
 
   // DELETE /resources/:id
   delete (req, res) {
-    this.policy.delete(req, res, this.deleteAllowed)
+    this.database.query(req, res, this.table, [['id', '=', res.locals.resourceId]], this.deleteFound)
+  }
+
+  deleteFound (err, req, res, results) {
+    if (err) {
+      return this.error(err, req, res, 'deleteAllowed')
+    }
+    var record = results[0]
+    if (!record) {
+      return this.error(new Error('NOT_FOUND'), req, res, 'deleteFound')
+    }
+    res.locals.record = record
+    this.policy.delete(req, res, record, this.deleteAllowed)
   }
 
   deleteAllowed (err, req, res) {
     if (err) {
       return this.error(err, req, res, 'deleteAllowed')
     }
-    this.database.delete(req, res, this.table, res.locals.resourceId, this.empty)
+    this.database.delete(req, res, this.table, res.locals.record.id, this.empty)
   }
 
   setResourceId (req, res) {
     var path = req.url
     if (typeof path === 'string' && path.length > 0) {
-      if (path[0] === '/') {
+      while (path[0] === '/') {
         path = path.slice(1)
       }
       res.locals.resourceId = path
@@ -234,7 +250,10 @@ class ResourceApp extends BaseApp {
     this.listResult = this.listResult.bind(this)
     this.showAllowed = this.showAllowed.bind(this)
     this.showFound = this.showFound.bind(this)
+    this.deleteFound = this.deleteFound.bind(this)
     this.deleteAllowed = this.deleteAllowed.bind(this)
+    this.parseRecord = this.parseRecord.bind(this)
+    this.parseList = this.parseList.bind(this)
   }
 }
 

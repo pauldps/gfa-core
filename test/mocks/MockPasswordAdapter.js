@@ -1,6 +1,6 @@
 'use strict'
 
-const {PasswordAdapter} = require('../../adapters/PasswordAdapter')
+const { PasswordAdapter } = require('../../adapters/PasswordAdapter')
 
 class MockPasswordAdapter extends PasswordAdapter {
   validate (req, res, hash, plain, callback) {

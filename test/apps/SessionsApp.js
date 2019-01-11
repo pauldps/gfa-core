@@ -1,16 +1,16 @@
 'use strict'
 
-const {SessionsApp} = require('../../apps/SessionsApp')
-const {MockSessionAdapter} = require('../mocks/MockSessionAdapter')
-const {MockDatabaseAdapter} = require('../mocks/MockDatabaseAdapter')
-const {MockPasswordAdapter} = require('../mocks/MockPasswordAdapter')
-const {SessionsRouter} = require('../../routers/SessionsRouter')
+const { SessionsApp } = require('../../apps/SessionsApp')
+const { MockSessionAdapter } = require('../mocks/MockSessionAdapter')
+const { MockDatabaseAdapter } = require('../mocks/MockDatabaseAdapter')
+const { MockPasswordAdapter } = require('../mocks/MockPasswordAdapter')
+const { SessionsRouter } = require('../../routers/SessionsRouter')
 
 const behaves = require('../behaviors')
 
 describe('SessionsApp', function () {
   let defaultAdapters = {
-    session: new MockSessionAdapter({secret: 'mock', expose: ['id', 'username']}),
+    session: new MockSessionAdapter({ secret: 'mock', expose: ['id', 'username'] }),
     database: new MockDatabaseAdapter(),
     password: new MockPasswordAdapter(),
     router: new SessionsRouter()
@@ -27,11 +27,12 @@ describe('SessionsApp', function () {
 
   context('with custom settings', function () {
     before(function () {
-      let options = Object.assign({
-        table: 'Usr',
-        fields: {primary: 'u', password: 'p'}
-      }, defaultAdapters)
-      options.session = new MockSessionAdapter({secret: 'mock2', expose: ['id', 'u']})
+      let options = Object.assign({ table: 'Usr' }, defaultAdapters)
+      options.session = new MockSessionAdapter({
+        secret: 'mock2',
+        expose: ['id', 'u'],
+        fields: { primary: 'u', password: 'p' }
+      })
       this.app = new SessionsApp(options)
       this.app.session.test = 'token'
     })

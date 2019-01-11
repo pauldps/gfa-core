@@ -1,6 +1,6 @@
 'use strict'
 
-const {SessionAdapter} = require('../../adapters/SessionAdapter')
+const { SessionAdapter } = require('../../adapters/SessionAdapter')
 
 // This mock loads base64-encoded tokens
 //   as session objects for testing purposes.
@@ -29,7 +29,7 @@ class MockSessionAdapter extends SessionAdapter {
       session[field] = userRecord[field]
     }
     res.locals.session = session
-    var encode = {data: session, secret: this.secret}
+    var encode = { data: session, secret: this.secret }
     res.header('x-token', Buffer.from(JSON.stringify(encode)).toString('base64'))
     callback(null, req, res)
   }

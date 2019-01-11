@@ -1,8 +1,8 @@
 'use strict'
 
-const {BaseApp} = require('./BaseApp')
+const { BaseApp } = require('./BaseApp')
 
-const INVALID_FORMAT = {code: 'INVALID_FORMAT'}
+const INVALID_FORMAT = { code: 'INVALID_FORMAT' }
 
 // This mini app serves the API endpoints for session management.
 class SessionsApp extends BaseApp {
@@ -22,14 +22,14 @@ class SessionsApp extends BaseApp {
     this.database = options.database
     this.password = options.password
     this.table = options.table || 'users'
-    this.setFieldNames(options.fields)
+
     this.build()
   }
 
   // POST /session
   signIn (req, res) {
-    var primaryField = this.fields.primary
-    var passwordField = this.fields.password
+    var primaryField = this.session.fields.primary
+    var passwordField = this.session.fields.password
     var primaryValue = req.body[primaryField]
     var passwordValue = req.body[passwordField]
     if (typeof primaryValue !== 'string' || typeof passwordValue !== 'string') {
@@ -54,7 +54,7 @@ class SessionsApp extends BaseApp {
     }
     var user = results[0]
     res.locals.signInUser = user
-    var passwordField = this.fields.password
+    var passwordField = this.session.fields.password
     this
       .password
       .validate(
@@ -75,7 +75,7 @@ class SessionsApp extends BaseApp {
       .session
       .create(
         req, res,
-        res.locals.signInUser,
+        res.locals.signInUser, // set in signInQueryResult()
         this.signInSessionResult
       )
   }
@@ -121,13 +121,6 @@ class SessionsApp extends BaseApp {
   // HEAD /session
   head (req, res) {
     this.session.authorize(req, res, this.empty)
-  }
-
-  setFieldNames (opts) {
-    this.fields = {}
-    var options = opts || {}
-    this.fields.primary = options.primary || 'username'
-    this.fields.password = options.password || 'password'
   }
 
   bindMethods () {

@@ -27,9 +27,10 @@
     "express": "4.16.4",
     "mocha": "5.2.0",
     "nyc": "13.1.0",
-    "standard": "*"
+    "standard": "12.0.1"
   },
   "nyc": {
+    "all": true,
     "include": [
       "adapters",
       "apps",

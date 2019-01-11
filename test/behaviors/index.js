@@ -1,4 +1,4 @@
-var {behaves} = require('./namespace')
+var { behaves } = require('./namespace')
 
 require('./SessionsApp')
 require('./DatabaseAdapter')

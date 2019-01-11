@@ -1,7 +1,7 @@
 'use strict'
 
-const {DatabaseAdapter} = require('../../adapters/DatabaseAdapter')
-const {NotFoundError} = require('../../errors/NotFoundError')
+const { DatabaseAdapter } = require('../../adapters/DatabaseAdapter')
+const { NotFoundError } = require('../../errors/NotFoundError')
 
 var nextId = 0
 

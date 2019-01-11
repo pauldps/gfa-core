@@ -3,10 +3,10 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const {ResourceApp} = require('../../apps/ResourceApp')
-const {MockDatabaseAdapter} = require('../mocks/MockDatabaseAdapter')
-const {ResourceRouter} = require('../../routers/ResourceRouter')
-const {emulator, setApp} = require('../support/emulator')
+const { ResourceApp } = require('../../apps/ResourceApp')
+const { MockDatabaseAdapter } = require('../mocks/MockDatabaseAdapter')
+const { ResourceRouter } = require('../../routers/ResourceRouter')
+const { emulator, setApp } = require('../support/emulator')
 
 class TestApp extends ResourceApp {
   parseRecord (record) {
@@ -36,7 +36,7 @@ describe('ResourceApp', function () {
       let response
 
       before(function () {
-        let data = {a: '1', b: 2, c: '3', password: '123', metadata: {a: 4, b: [5, '6']}}
+        let data = { a: '1', b: 2, c: '3', password: '123', metadata: { a: 4, b: [5, '6'] } }
         return chai.request(emulator).post('/').send(data).then(res => {
           response = res
           record = response.body
@@ -125,7 +125,7 @@ describe('ResourceApp', function () {
       let response
 
       before(function () {
-        let data = {b: 1}
+        let data = { b: 1 }
         return chai.request(emulator).patch(`/${record.id}`).send(data).then(res => {
           response = res
         })
@@ -163,7 +163,7 @@ describe('ResourceApp', function () {
       let response
 
       before(function () {
-        let data = {b: 3}
+        let data = { b: 3 }
         return chai.request(emulator).put(`/${record.id}`).send(data).then(res => {
           response = res
         })

@@ -1,7 +1,7 @@
 'use strict'
 
 const expect = require('chai').expect
-var {behaves} = require('./namespace')
+var { behaves } = require('./namespace')
 
 behaves.like.a.DatabaseAdapterQueryResult = function () {
   it('is an array', function () {

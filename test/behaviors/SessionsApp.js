@@ -2,15 +2,17 @@
 
 const chai = require('chai')
 const expect = chai.expect
-const {emulator, setApp} = require('../support/emulator')
+const { emulator, setApp } = require('../support/emulator')
 
-var {behaves} = require('./namespace')
+var { behaves } = require('./namespace')
 
 behaves.like.a.SessionsApp = function () {
   let pass1, pass2
 
   before(function (done) {
     setApp(this.app)
+    this.primaryField = this.app.session.fields.primary
+    this.passwordField = this.app.session.fields.password
     var db = this.app.database
     var pw = this.app.password
     pw.generate(null, null, '123', (err, req, res, hash) => {
@@ -19,12 +21,12 @@ behaves.like.a.SessionsApp = function () {
       pw.generate(null, null, '456', (err, req, res, hash) => {
         if (err) return done(err)
         pass2 = hash
-        var record1 = {id: 1}
-        var record2 = {id: 2}
-        record1[this.app.fields.primary] = 'abc'
-        record2[this.app.fields.primary] = 'def'
-        record1[this.app.fields.password] = pass1
-        record2[this.app.fields.password] = pass2
+        var record1 = { id: 1 }
+        var record2 = { id: 2 }
+        record1[this.primaryField] = 'abc'
+        record2[this.primaryField] = 'def'
+        record1[this.passwordField] = pass1
+        record2[this.passwordField] = pass2
         db.tables.set(this.app.table, [record1, record2])
         done()
       })
@@ -35,28 +37,28 @@ behaves.like.a.SessionsApp = function () {
     context('with correct username/password', function () {
       it('is successful', function () {
         let data = {}
-        data[this.app.fields.primary] = 'abc'
-        data[this.app.fields.password] = '123'
+        data[this.primaryField] = 'abc'
+        data[this.passwordField] = '123'
         return chai.request(emulator).post('/').send(data).then(response => {
           expect(response).to.have.status(201)
           expect(response.body).to.exist()
           expect(response.body.id).to.exist()
-          expect(response.body[this.app.fields.primary]).to.equal('abc')
-          expect(response.body[this.app.fields.password]).to.not.exist()
+          expect(response.body[this.primaryField]).to.equal('abc')
+          expect(response.body[this.passwordField]).to.not.exist()
           expect(response).to.have.header('x-token')
         })
       })
 
       it('returns correct user', function () {
         let data = {}
-        data[this.app.fields.primary] = 'def'
-        data[this.app.fields.password] = '456'
+        data[this.primaryField] = 'def'
+        data[this.passwordField] = '456'
         return chai.request(emulator).post('/').send(data).then(response => {
           expect(response).to.have.status(201)
           expect(response.body).to.exist()
           expect(response.body.id).to.exist()
-          expect(response.body[this.app.fields.primary]).to.equal('def')
-          expect(response.body[this.app.fields.password]).to.not.exist()
+          expect(response.body[this.primaryField]).to.equal('def')
+          expect(response.body[this.passwordField]).to.not.exist()
           if (this.app.session.test === 'token') {
             expect(response).to.have.header('x-token')
           }
@@ -67,8 +69,8 @@ behaves.like.a.SessionsApp = function () {
     context('with incorrect username', function () {
       it('fails with status 401', function () {
         let data = {}
-        data[this.app.fields.primary] = 'abcdef'
-        data[this.app.fields.password] = '123'
+        data[this.primaryField] = 'abcdef'
+        data[this.passwordField] = '123'
         return chai
           .request(emulator)
           .post('/')
@@ -85,8 +87,8 @@ behaves.like.a.SessionsApp = function () {
     context('with incorrect password', function () {
       it('fails with status 401', function () {
         let data = {}
-        data[this.app.fields.primary] = 'abc'
-        data[this.app.fields.password] = '456'
+        data[this.primaryField] = 'abc'
+        data[this.passwordField] = '456'
         return chai
           .request(emulator)
           .post('/')
@@ -103,7 +105,7 @@ behaves.like.a.SessionsApp = function () {
     context('with blank username', function () {
       it('fails with status 400', function () {
         let data = {}
-        data[this.app.fields.password] = '123'
+        data[this.passwordField] = '123'
         return chai
           .request(emulator)
           .post('/')
@@ -120,7 +122,7 @@ behaves.like.a.SessionsApp = function () {
     context('with blank password', function () {
       it('fails with status 400', function () {
         let data = {}
-        data[this.app.fields.primary] = 'abc'
+        data[this.primaryField] = 'abc'
         return chai
           .request(emulator)
           .post('/')
@@ -141,8 +143,8 @@ behaves.like.a.SessionsApp = function () {
 
       before(function () {
         let data = {}
-        data[this.app.fields.primary] = 'abc'
-        data[this.app.fields.password] = '123'
+        data[this.primaryField] = 'abc'
+        data[this.passwordField] = '123'
         return chai
           .request(emulator)
           .post('/')
@@ -161,8 +163,8 @@ behaves.like.a.SessionsApp = function () {
             expect(response).to.have.status(200)
             expect(response.body).to.exist()
             expect(response.body.id).to.equal(1)
-            expect(response.body[this.app.fields.primary]).to.equal('abc')
-            expect(response.body[this.app.fields.password]).to.not.exist()
+            expect(response.body[this.primaryField]).to.equal('abc')
+            expect(response.body[this.passwordField]).to.not.exist()
           })
       })
     })
@@ -186,8 +188,8 @@ behaves.like.a.SessionsApp = function () {
 
       before(function () {
         let data = {}
-        data[this.app.fields.primary] = 'abc'
-        data[this.app.fields.password] = '123'
+        data[this.primaryField] = 'abc'
+        data[this.passwordField] = '123'
         return chai
           .request(emulator)
           .post('/')

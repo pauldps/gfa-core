@@ -13,6 +13,7 @@ class SessionAdapter {
     this.duration = options.duration || (24 * 60 * 60 * 1000)
     this.activeDuration = options.activeDuration || (1000 * 60 * 5)
     this.expose = options.expose || ['id']
+    this.setFieldNames(options.fields)
     this.bindMethods()
   }
 
@@ -67,6 +68,17 @@ class SessionAdapter {
   // This method should be overridden if session data is stored in a different place.
   data (_req, res) {
     return res.locals.session
+  }
+
+  setFieldNames (opts) {
+    var options = opts || {}
+    this.fields = {
+      primary: options.primary || 'username',
+      username: options.username || 'username',
+      password: options.password || 'password',
+      email: options.email || 'email',
+      role: options.role || 'role'
+    }
   }
 
   bindMethods () {

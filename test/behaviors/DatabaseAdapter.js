@@ -1,14 +1,14 @@
 'use strict'
 
 const expect = require('chai').expect
-var {behaves} = require('./namespace')
+var { behaves } = require('./namespace')
 
 require('./DatabaseAdapterQueryResult')
 
 behaves.like.a.DatabaseAdapter = function () {
-  let task1 = {name: 'task 1', active: true}
-  let task2 = {id: 'task2', name: 'task 2', active: false}
-  let note1 = {name: 'note 1'}
+  let task1 = { name: 'task 1', active: true }
+  let task2 = { id: 'task2', name: 'task 2', active: false }
+  let note1 = { name: 'note 1' }
 
   describe('#create', function () {
     before(function (done) {

@@ -1,6 +1,6 @@
 'use strict'
 
-const {BaseRouter} = require('./BaseRouter')
+const { BaseRouter } = require('./BaseRouter')
 
 class SessionsRouter extends BaseRouter {
   build (app) {
