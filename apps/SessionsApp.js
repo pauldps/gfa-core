@@ -33,7 +33,8 @@ class SessionsApp extends BaseApp {
     var primaryValue = req.body[primaryField]
     var passwordValue = req.body[passwordField]
     if (typeof primaryValue !== 'string' || typeof passwordValue !== 'string') {
-      return res.status(400).json(INVALID_FORMAT)
+      res.status(400).json(INVALID_FORMAT)
+      return
     }
     var conditions = [[primaryField, '=', primaryValue]]
     this
@@ -47,10 +48,12 @@ class SessionsApp extends BaseApp {
 
   signInQueryResult (err, req, res, results) {
     if (err) {
-      return this.error(err, req, res, 'signInQueryResult')
+      this.error(err, req, res, 'signInQueryResult')
+      return
     }
     if (!results || results.length === 0) {
-      return res.status(401).end()
+      res.status(401).end()
+      return
     }
     var user = results[0]
     res.locals.signInUser = user
@@ -66,10 +69,12 @@ class SessionsApp extends BaseApp {
 
   signInPasswordResult (err, req, res, valid) {
     if (err) {
-      return this.error(err, req, res, 'signInPasswordResult')
+      this.error(err, req, res, 'signInPasswordResult')
+      return
     }
     if (!valid) {
-      return res.status(401).end()
+      res.status(401).end()
+      return
     }
     this
       .session
@@ -82,7 +87,8 @@ class SessionsApp extends BaseApp {
 
   signInSessionResult (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'signInSessionResult')
+      this.error(err, req, res, 'signInSessionResult')
+      return
     }
     res.status(201).json(this.session.data(req, res))
   }
@@ -94,14 +100,16 @@ class SessionsApp extends BaseApp {
 
   signOutAuthorized (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'signOutAuthorized')
+      this.error(err, req, res, 'signOutAuthorized')
+      return
     }
     this.session.destroy(req, res, this.signOutSessionDestroy)
   }
 
   signOutSessionDestroy (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'signOutSessionDestroy')
+      this.error(err, req, res, 'signOutSessionDestroy')
+      return
     }
     this.empty(null, req, res)
   }
@@ -113,7 +121,8 @@ class SessionsApp extends BaseApp {
 
   infoAuthorized (err, req, res, sessionData) {
     if (err) {
-      return this.error(err, req, res, 'infoAuthorized')
+      this.error(err, req, res, 'infoAuthorized')
+      return
     }
     res.status(200).json(sessionData)
   }

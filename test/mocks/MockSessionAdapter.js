@@ -8,15 +8,18 @@ class MockSessionAdapter extends SessionAdapter {
   load (req, res, callback) {
     var token = req.header('authorization')
     if (!token) {
-      return callback(null, req, res) // ignored as bad token
+      callback(null, req, res) // ignored as bad token
+      return
     }
     try {
       var decode = JSON.parse(Buffer.from(req.header('authorization'), 'base64').toString('ascii'))
     } catch (err) {
-      return callback(null, req, res) // ignored as bad token
+      callback(null, req, res) // ignored as bad token
+      return
     }
     if (decode.secret !== this.secret) {
-      return callback(null, req, res) // ignored as bad token
+      callback(null, req, res) // ignored as bad token
+      return
     }
     res.locals.session = decode.data
     callback(null, req, res)

@@ -2,6 +2,9 @@
 
 const { BaseApp } = require('./BaseApp')
 const { PublicPolicy } = require('../policies/PublicPolicy')
+const { NotFoundError } = require('../errors/NotFoundError')
+
+const NOT_FOUND = new NotFoundError()
 
 class ResourceApp extends BaseApp {
   constructor (options) {
@@ -72,7 +75,8 @@ class ResourceApp extends BaseApp {
 
   createAllowed (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'createAllowed')
+      this.error(err, req, res, 'createAllowed')
+      return
     }
     this.sanitize(req, res)
     delete req.body.id
@@ -81,7 +85,8 @@ class ResourceApp extends BaseApp {
 
   createValidated (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'createValidated')
+      this.error(err, req, res, 'createValidated')
+      return
     }
     this.timestamp(req.body)
     this.database.insert(req, res, this.table, req.body, this.createSaved)
@@ -89,7 +94,8 @@ class ResourceApp extends BaseApp {
 
   createSaved (err, req, res, id) {
     if (err) {
-      return this.error(err, req, res, 'createSaved')
+      this.error(err, req, res, 'createSaved')
+      return
     }
     req.body.id = id
     res.status(201).json(this.parseRecord(req.body, req, res))
@@ -102,11 +108,13 @@ class ResourceApp extends BaseApp {
 
   replaceFound (err, req, res, results) {
     if (err) {
-      return this.error(err, req, res, 'replaceFound')
+      this.error(err, req, res, 'replaceFound')
+      return
     }
     var record = results[0]
     if (!record) {
-      return this.error(new Error('NOT_FOUND'), req, res, 'replaceFound')
+      this.error(NOT_FOUND, req, res, 'replaceFound')
+      return
     }
     res.locals.record = record
     this.policy.update(req, res, record, this.replaceAllowed)
@@ -114,7 +122,8 @@ class ResourceApp extends BaseApp {
 
   replaceAllowed (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'replaceAllowed')
+      this.error(err, req, res, 'replaceAllowed')
+      return
     }
     var record = res.locals.record
     if (req.partialUpdate) {
@@ -134,7 +143,8 @@ class ResourceApp extends BaseApp {
 
   replaceValidated (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'replaceValidated')
+      this.error(err, req, res, 'replaceValidated')
+      return
     }
     this.timestamp(req.body)
     this.database.replace(req, res, this.table, res.locals.resourceId, req.body, this.replaceSaved)
@@ -142,7 +152,8 @@ class ResourceApp extends BaseApp {
 
   replaceSaved (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'replaceSaved')
+      this.error(err, req, res, 'replaceSaved')
+      return
     }
     req.body.id = res.locals.resourceId
     res.status(200).json(this.parseRecord(req.body, req, res))
@@ -161,14 +172,16 @@ class ResourceApp extends BaseApp {
 
   listAllowed (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'listAllowed')
+      this.error(err, req, res, 'listAllowed')
+      return
     }
     this.database.query(req, res, this.table, [], this.listResult)
   }
 
   listResult (err, req, res, results) {
     if (err) {
-      return this.error(err, req, res, 'listResult')
+      this.error(err, req, res, 'listResult')
+      return
     }
     res.status(200).json(this.parseList(results, req, res))
   }
@@ -180,11 +193,13 @@ class ResourceApp extends BaseApp {
 
   showFound (err, req, res, results) {
     if (err) {
-      return this.error(err, req, res, 'showFound')
+      this.error(err, req, res, 'showFound')
+      return
     }
     var record = results[0]
     if (!record) {
-      return this.error(new Error('NOT_FOUND'), req, res, 'showFound')
+      this.error(NOT_FOUND, req, res, 'showFound')
+      return
     }
     res.locals.record = record
     this.policy.show(req, res, record, this.showAllowed)
@@ -192,7 +207,8 @@ class ResourceApp extends BaseApp {
 
   showAllowed (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'showAllowed')
+      this.error(err, req, res, 'showAllowed')
+      return
     }
     res.status(200).json(this.parseRecord(res.locals.record, req, res))
   }
@@ -204,11 +220,13 @@ class ResourceApp extends BaseApp {
 
   deleteFound (err, req, res, results) {
     if (err) {
-      return this.error(err, req, res, 'deleteAllowed')
+      this.error(err, req, res, 'deleteAllowed')
+      return
     }
     var record = results[0]
     if (!record) {
-      return this.error(new Error('NOT_FOUND'), req, res, 'deleteFound')
+      this.error(NOT_FOUND, req, res, 'deleteFound')
+      return
     }
     res.locals.record = record
     this.policy.delete(req, res, record, this.deleteAllowed)
@@ -216,7 +234,8 @@ class ResourceApp extends BaseApp {
 
   deleteAllowed (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'deleteAllowed')
+      this.error(err, req, res, 'deleteAllowed')
+      return
     }
     this.database.delete(req, res, this.table, res.locals.record.id, this.empty)
   }

@@ -1,6 +1,7 @@
 'use strict'
 
-const UNAUTHORIZED = new Error('UNAUTHORIZED')
+const { UnauthorizedError } = require('../errors/UnauthorizedError')
+const UNAUTHORIZED = new UnauthorizedError('UNAUTHORIZED')
 
 class SessionAdapter {
   constructor (opts) {
@@ -30,14 +31,17 @@ class SessionAdapter {
     req.authorizeCallback = null
     if (!callback) {
       console.error('authorizeLoaded', 'request.authorizeCallback not set')
-      return res.status(500).end()
+      res.status(500).end()
+      return
     }
     if (err) {
-      return callback(err, req, res, null)
+      callback(err, req, res, null)
+      return
     }
     var data = this.data(req, res)
     if (!data || !data.id) {
-      return callback(UNAUTHORIZED, req, res, null)
+      callback(UNAUTHORIZED, req, res, null)
+      return
     }
     callback(null, req, res, data)
   }
@@ -73,11 +77,26 @@ class SessionAdapter {
   setFieldNames (opts) {
     var options = opts || {}
     this.fields = {
+
+      // The field used along password to log in.
+      // Usually the username or email.
       primary: options.primary || 'username',
+
+      // A unique username.
       username: options.username || 'username',
+
+      // The password field.
       password: options.password || 'password',
+
+      // Email field, unique.
       email: options.email || 'email',
-      role: options.role || 'role'
+
+      // User role. "admin" has access to everything.
+      // Defaults to null.
+      role: options.role || 'role',
+
+      // Field name in other tables that stores the user ID.
+      association: options.association || 'userId'
     }
   }
 

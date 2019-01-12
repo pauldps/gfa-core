@@ -40,7 +40,8 @@ class BaseApp {
 
   empty (err, req, res) {
     if (err) {
-      return this.error(err, req, res, 'empty')
+      this.error(err, req, res, 'empty')
+      return
     }
     res.status(204).end()
   }
@@ -48,11 +49,9 @@ class BaseApp {
   // Used only for uncaught errors.
   // Error details should be logged, but not exposed.
   error (err, req, res, source) {
-    if (err.message === 'UNAUTHORIZED' || err.status === 401) {
-      return res.status(401).end()
-    }
-    if (err.message === 'NOT_FOUND' || err.status === 404) {
-      return res.status(404).end()
+    if (err.status) {
+      res.status(err.status).end()
+      return
     }
     console.error(source, err)
     res.status(500).json(INTERNAL_ERROR_RESPONSE)

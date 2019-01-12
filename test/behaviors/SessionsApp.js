@@ -3,32 +3,36 @@
 const chai = require('chai')
 const expect = chai.expect
 const { emulator, setApp } = require('../support/emulator')
+const { UsersApp } = require('../../apps/UsersApp')
+const { ResourceRouter } = require('../../routers/ResourceRouter')
 
 var { behaves } = require('./namespace')
 
 behaves.like.a.SessionsApp = function () {
-  let pass1, pass2
+  var id1
 
-  before(function (done) {
-    setApp(this.app)
+  before(function () {
+    this.usersApp = new UsersApp({
+      database: this.app.database,
+      session: this.app.session,
+      password: this.app.password,
+      table: this.app.table,
+      router: new ResourceRouter()
+    })
+    setApp(this.usersApp)
     this.primaryField = this.app.session.fields.primary
     this.passwordField = this.app.session.fields.password
-    var db = this.app.database
-    var pw = this.app.password
-    pw.generate(null, null, '123', (err, req, res, hash) => {
-      if (err) return done(err)
-      pass1 = hash
-      pw.generate(null, null, '456', (err, req, res, hash) => {
-        if (err) return done(err)
-        pass2 = hash
-        var record1 = { id: 1 }
-        var record2 = { id: 2 }
-        record1[this.primaryField] = 'abc'
-        record2[this.primaryField] = 'def'
-        record1[this.passwordField] = pass1
-        record2[this.passwordField] = pass2
-        db.tables.set(this.app.table, [record1, record2])
-        done()
+    let data1 = {}
+    let data2 = {}
+    data1[this.primaryField] = 'abc'
+    data1[this.passwordField] = '123'
+    data2[this.primaryField] = 'def'
+    data2[this.passwordField] = '456'
+    // Create two users using the UsersApp
+    return chai.request(emulator).post('/').send(data1).then(res => {
+      id1 = res.body.id
+      return chai.request(emulator).post('/').send(data2).then(res => {
+        setApp(this.app)
       })
     })
   })
@@ -162,7 +166,7 @@ behaves.like.a.SessionsApp = function () {
           .then(response => {
             expect(response).to.have.status(200)
             expect(response.body).to.exist()
-            expect(response.body.id).to.equal(1)
+            expect(response.body.id).to.equal(id1)
             expect(response.body[this.primaryField]).to.equal('abc')
             expect(response.body[this.passwordField]).to.not.exist()
           })
