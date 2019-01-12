@@ -12,6 +12,7 @@ class UsersApp extends ResourceApp {
     if (!options.password) {
       throw new Error('USERS_APP_PASSWORD_ADAPTER_REQUIRED')
     }
+    options.table = options.table || 'Users'
     super(options)
     this.policy = options.policy || new UserPolicy(this)
     this.password = options.password
