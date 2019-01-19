@@ -2,6 +2,7 @@
 
 const { BaseApp } = require('./BaseApp')
 const { PublicPolicy } = require('../policies/PublicPolicy')
+const { OwnerPolicy } = require('../policies/OwnerPolicy')
 const { NotFoundError } = require('../errors/NotFoundError')
 
 const NOT_FOUND = new NotFoundError()
@@ -18,12 +19,29 @@ class ResourceApp extends BaseApp {
     this.database = options.database
     this.session = options.session
     this.table = options.table
-    this.policy = options.policy || new PublicPolicy(this)
+    this.policy = options.policy || options.session ? new OwnerPolicy(this) : new PublicPolicy(this)
     this.timestamps = options.timestamps || { enabled: false }
     if (this.timestamps.created || this.timestamps.updated) {
       this.timestamps.enabled = true
     }
     this.build()
+  }
+
+  handle (req, res) {
+    this.setHeaders(req, res)
+    if (this.session) {
+      this.session.load(req, res, this.handleSession)
+    } else {
+      this.router.handle(req, res)
+    }
+  }
+
+  handleSession (err, req, res) {
+    if (err) {
+      this.error(err, req, res)
+      return
+    }
+    this.router.handle(req, res)
   }
 
   sanitize (req, res) {
@@ -252,6 +270,7 @@ class ResourceApp extends BaseApp {
 
   bindMethods () {
     super.bindMethods()
+    this.handleSession = this.handleSession.bind(this)
     this.create = this.create.bind(this)
     this.replace = this.replace.bind(this)
     this.update = this.update.bind(this)

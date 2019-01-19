@@ -2,19 +2,24 @@
 
 const { SessionPolicy } = require('./SessionPolicy')
 
-// This policy handles user records.
-class UserPolicy extends SessionPolicy {
+// This policy handles records owned by users.
+class OwnerPolicy extends SessionPolicy {
   create (req, res, callback) {
     if (this.disabled('create')) {
       this.notFound(req, res, callback)
       return
     }
-    this.session(req, res, (err, data) => {
+    this.session(req, res, (err, user) => {
       if (err) {
         callback(err, req, res)
         return
       }
-      // Nothing to do, but session needs to be loaded for sanitization to work.
+      if (!user) {
+        this.unauthorized(req, res, callback)
+        return
+      }
+      // Injects userId into data to be saved
+      req.body[this.app.session.fields.association] = user.id
       super.create(req, res, callback)
     })
   }
@@ -24,13 +29,17 @@ class UserPolicy extends SessionPolicy {
       this.notFound(req, res, callback)
       return
     }
-    this.session(req, res, (err, data) => {
+    this.session(req, res, (err, user) => {
       if (err) {
         callback(err, req, res)
         return
       }
-      // Admin or Self can update record
-      if (data && (data[this.app.session.fields.role] === 'admin' || data.id === record.id)) {
+      if (!user) {
+        this.unauthorized(req, res, callback)
+        return
+      }
+      // Admin or Owner can update record
+      if (user[this.app.session.fields.role] === 'admin' || user.id === record[this.app.session.fields.association]) {
         super.update(req, res, record, callback)
         return
       }
@@ -43,17 +52,17 @@ class UserPolicy extends SessionPolicy {
       this.notFound(req, res, callback)
       return
     }
-    this.session(req, res, (err, data) => {
+    this.session(req, res, (err, user) => {
       if (err) {
         callback(err, req, res)
         return
       }
-      if (!data) {
+      if (!user) {
         this.unauthorized(req, res, callback)
         return
       }
-      // Only Admins can list users.
-      if (data && data[this.app.session.fields.role] === 'admin') {
+      // Only Admins can list owned records.
+      if (user[this.app.session.fields.role] === 'admin') {
         super.list(req, res, callback)
         return
       }
@@ -66,17 +75,17 @@ class UserPolicy extends SessionPolicy {
       this.notFound(req, res, callback)
       return
     }
-    this.session(req, res, (err, data) => {
+    this.session(req, res, (err, user) => {
       if (err) {
         callback(err, req, res)
         return
       }
-      if (!data) {
+      if (!user) {
         this.unauthorized(req, res, callback)
         return
       }
-      // Admin or Self can see record
-      if (data && (data[this.app.session.fields.role] === 'admin' || data.id === record.id)) {
+      // Admin or Owner can see record
+      if (user[this.app.session.fields.role] === 'admin' || user.id === record[this.app.session.fields.association]) {
         super.show(req, res, record, callback)
         return
       }
@@ -89,13 +98,17 @@ class UserPolicy extends SessionPolicy {
       this.notFound(req, res, callback)
       return
     }
-    this.session(req, res, (err, data) => {
+    this.session(req, res, (err, user) => {
       if (err) {
         callback(err, req, res)
         return
       }
-      // Admin or Self can delete record
-      if (data && (data[this.app.session.fields.role] === 'admin' || data.id === record.id)) {
+      if (!user) {
+        this.unauthorized(req, res, callback)
+        return
+      }
+      // Admin or Owner can delete record
+      if (user[this.app.session.fields.role] === 'admin' || user.id === record[this.app.session.fields.association]) {
         super.delete(req, res, record, callback)
         return
       }
@@ -104,4 +117,4 @@ class UserPolicy extends SessionPolicy {
   }
 }
 
-exports.UserPolicy = UserPolicy
+exports.OwnerPolicy = OwnerPolicy
