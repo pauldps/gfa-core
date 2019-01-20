@@ -20,7 +20,7 @@ class ResourceApp extends BaseApp {
     this.database = options.database
     this.session = options.session
     this.table = options.table
-    this.policy = options.policy || options.session ? new OwnerPolicy(this) : new PublicPolicy(this)
+    this.policy = options.policy || (this.session ? new OwnerPolicy(this) : new PublicPolicy(this))
     this.timestamps = options.timestamps || { enabled: false }
     if (this.timestamps.created || this.timestamps.updated) {
       this.timestamps.enabled = true
