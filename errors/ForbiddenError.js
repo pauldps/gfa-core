@@ -6,7 +6,7 @@ class ForbiddenError extends Error {
     if (!this.message) {
       this.message = 'FORBIDDEN'
     }
-    this.status = 409
+    this.status = 403
   }
 }
 

@@ -4,6 +4,7 @@ const { BaseApp } = require('./BaseApp')
 const { PublicPolicy } = require('../policies/PublicPolicy')
 const { OwnerPolicy } = require('../policies/OwnerPolicy')
 const { NotFoundError } = require('../errors/NotFoundError')
+const { ConflictError } = require('../errors/ConflictError')
 
 const NOT_FOUND = new NotFoundError()
 
@@ -24,6 +25,8 @@ class ResourceApp extends BaseApp {
     if (this.timestamps.created || this.timestamps.updated) {
       this.timestamps.enabled = true
     }
+    this.unique = [] // field names that should be used in unique queries
+    this.updateOnConflict = false // if unique constraint fails on creation, update found record instead
     this.build()
   }
 
@@ -107,7 +110,16 @@ class ResourceApp extends BaseApp {
       return
     }
     this.timestamp(req.body)
-    this.database.insert(req, res, this.table, req.body, this.createSaved)
+    if (!this.unique || this.unique.length === 0) {
+      this.database.insert(req, res, this.table, req.body, this.createSaved)
+      return
+    }
+    // Look for conflicting records
+    var conditions = []
+    for (var field of this.unique) {
+      conditions.push([field, '=', req.body[field]])
+    }
+    this.database.query(req, res, this.table, conditions, this.createConstraint)
   }
 
   createSaved (err, req, res, id) {
@@ -117,6 +129,26 @@ class ResourceApp extends BaseApp {
     }
     req.body.id = id
     res.status(201).json(this.parseRecord(req.body, req, res))
+  }
+
+  createConstraint (err, req, res, results) {
+    if (err) {
+      this.error(err, req, res, 'createConstraint')
+      return
+    }
+    var record = results[0]
+    if (!record) { // No conflict
+      this.database.insert(req, res, this.table, req.body, this.createSaved)
+      return
+    }
+    if (this.updateOnConflict) {
+      req.partialUpdate = true
+      res.locals.record = record
+      res.locals.resourceId = record.id
+      this.replaceAllowed(null, req, res)
+      return
+    }
+    this.error(new ConflictError(), req, res, 'createConstraint')
   }
 
   // PUT /resources
@@ -193,7 +225,14 @@ class ResourceApp extends BaseApp {
       this.error(err, req, res, 'listAllowed')
       return
     }
-    this.database.query(req, res, this.table, [], this.listResult)
+    var conditions = []
+    if (this.session && this.policy.isOwnerPolicy) {
+      var user = this.session.data(req, res)
+      if (user) {
+        conditions.push([this.session.fields.association, '=', user.id])
+      }
+    }
+    this.database.query(req, res, this.table, conditions, this.listResult)
   }
 
   listResult (err, req, res, results) {
@@ -280,6 +319,7 @@ class ResourceApp extends BaseApp {
     this.createAllowed = this.createAllowed.bind(this)
     this.createValidated = this.createValidated.bind(this)
     this.createSaved = this.createSaved.bind(this)
+    this.createConstraint = this.createConstraint.bind(this)
     this.replaceAllowed = this.replaceAllowed.bind(this)
     this.replaceFound = this.replaceFound.bind(this)
     this.replaceValidated = this.replaceValidated.bind(this)

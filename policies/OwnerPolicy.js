@@ -4,6 +4,11 @@ const { SessionPolicy } = require('./SessionPolicy')
 
 // This policy handles records owned by users.
 class OwnerPolicy extends SessionPolicy {
+  constructor (app) {
+    super(app)
+    this.isOwnerPolicy = true
+  }
+
   create (req, res, callback) {
     if (this.disabled('create')) {
       this.notFound(req, res, callback)
@@ -61,12 +66,8 @@ class OwnerPolicy extends SessionPolicy {
         this.unauthorized(req, res, callback)
         return
       }
-      // Only Admins can list owned records.
-      if (user[this.app.session.fields.role] === 'admin') {
-        super.list(req, res, callback)
-        return
-      }
-      this.forbidden(req, res, null, callback)
+      // List will be filtered in the app itself
+      super.list(req, res, callback)
     })
   }
 

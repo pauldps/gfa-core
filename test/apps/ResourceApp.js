@@ -22,18 +22,17 @@ describe('ResourceApp', function () {
   let database = new MockDatabaseAdapter()
 
   context('without session', function () {
-    let app = new TestApp({
-      database,
-      router: new ResourceRouter(),
-      table: 'Tasks',
-      timestamps: {
-        created: 'createdAt',
-        updated: 'updatedAt'
-      }
-    })
-
     before(function () {
-      setApp(app)
+      this.app = new TestApp({
+        database,
+        router: new ResourceRouter(),
+        table: 'Tasks',
+        timestamps: {
+          created: 'createdAt',
+          updated: 'updatedAt'
+        }
+      })
+      setApp(this.app)
       // creates persistentRecord
       let data = { description: 'Persistent Record' }
       return chai.request(emulator).post('/').send(data).then(res => {
@@ -74,6 +73,40 @@ describe('ResourceApp', function () {
         it('timestamps record', function () {
           expect(response.body.createdAt).to.exist()
           expect(response.body.updatedAt).to.exist()
+        })
+      })
+
+      context('with unique fields', function () {
+        before(function () {
+          this.app.unique = ['username']
+          return chai.request(emulator).post('/').send({ username: 'abc', a: 1 })
+        })
+
+        after(function () {
+          this.app.unique = []
+        })
+
+        it('fails with conflict when trying to create record with the same unique field', function () {
+          return chai.request(emulator).post('/').send({ username: 'abc', a: 2 }).then(response => {
+            expect(response).to.have.status(409)
+          })
+        })
+
+        context('with update flag', function () {
+          before(function () {
+            this.app.updateOnConflict = true
+          })
+
+          after(function () {
+            this.app.updateOnConflict = false
+          })
+
+          it('updates the existing record instead of returning conflict error', function () {
+            return chai.request(emulator).post('/').send({ username: 'abc', a: 2 }).then(response => {
+              expect(response).to.have.status(200)
+              expect(response.body.a).to.equal(2)
+            })
+          })
         })
       })
     })
@@ -234,19 +267,19 @@ describe('ResourceApp', function () {
   })
 
   context('with session', function () {
-    let app = new TestApp({
-      database,
-      router: new ResourceRouter(),
-      session: new MockSessionAdapter({ secret: 'abc' }),
-      table: 'Tasks',
-      timestamps: {
-        created: 'createdAt',
-        updated: 'updatedAt'
-      }
-    })
-
     before(function () {
-      setApp(app)
+      this.app = new TestApp({
+        database,
+        router: new ResourceRouter(),
+        session: new MockSessionAdapter({ secret: 'abc' }),
+        table: 'Tasks',
+        timestamps: {
+          created: 'createdAt',
+          updated: 'updatedAt'
+        }
+      })
+
+      setApp(this.app)
     })
 
     context('without token', function () {
