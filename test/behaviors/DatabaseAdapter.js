@@ -6,7 +6,7 @@ var { behaves } = require('./namespace')
 require('./DatabaseAdapterQueryResult')
 
 behaves.like.a.DatabaseAdapter = function () {
-  let task1 = { name: 'task 1', active: true }
+  let task1 = { name: 'task 1', active: true, created: new Date() }
   let task2 = { id: 'task2', name: 'task 2', active: false }
   let note1 = { name: 'note 1' }
 
