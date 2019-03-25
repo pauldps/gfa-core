@@ -1,7 +1,12 @@
-# @gfa/core
+### THIS PROJECT HAS BEEN DISCONTINUED.
 
-[![Build Status](https://travis-ci.com/pauloddr/gfa-core.svg?branch=master)](https://travis-ci.com/pauloddr/gfa-core)
-[![Coverage Status](https://coveralls.io/repos/github/pauloddr/gfa-core/badge.svg?branch=master)](https://coveralls.io/github/pauloddr/gfa-core?branch=master)
+Read more [here](https://github.com/pauloddr/gfa-guides/blob/master/README.md).
+
+Original README archived below.
+
+---
+
+# @gfa/core
 
 This is the base project for the family of __@gfa/*__ components.
 
